@@ -16,12 +16,14 @@ void yyerror(const char* s);
 
 %union {
   enum opcode opcode;
+  const char* str;
 }
 
 %token T_OP
-%token T_NEWLINE T_QUIT
+%token T_NEWLINE T_QUIT T_EXAMPLE
 
 %type<opcode> T_OP
+%type<str> T_EXAMPLE
 
 %start script
 
@@ -33,6 +35,7 @@ script:
 
 line: T_NEWLINE
     | T_OP { printf("%s\n", op_name($1)); }
+    | T_EXAMPLE { printf("ex:%s\n", $1); }
 
 /* opcode: */
 /*       | T_OP { op_add($$); } */

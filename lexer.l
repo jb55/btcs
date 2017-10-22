@@ -14,7 +14,9 @@
 %%
 
 [ \t]	; // ignore all whitespace
-\n		               {return T_NEWLINE;}
+\n		{return T_NEWLINE;}
+
+\<[^\>]+\> { yylval.str = yytext; return T_EXAMPLE; }
 
 [oO][pP]_ {}
 
