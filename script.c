@@ -1,36 +1,16 @@
 
 #include "script.h"
+#include "oplookup.h"
+#include "misc.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
 
 
-enum opcode
-op_tokenize(char *str) {
-  int len,i;
-  char *p;
-
-  p = str;
-  len = strlen(str);
-
-  for (i = 0; i < len; ++i)
-    str[i] = toupper(str[i]);
-
-  // upper all all
-  if (len >= 3)
-  if (str[0] == 'O')
-  if (str[1] == 'P')
-  if (str[2] == '_') {
-    p = &str[3];
-    len -= 3;
-  }
-
-  return op_mph(str);
-}
-
-
-enum opcode op_from_token(enum opcode_token opcode) {
+static enum opcode
+op_from_token(enum opcode_token opcode) {
   switch (opcode) {
   case _OP_0: return OP_0;
   case _OP_FALSE: return OP_FALSE;
@@ -162,11 +142,11 @@ const char* op_str(enum opcode opcode)
     {
     // push value
     case OP_0                      : return "0";
-    case OP_PUSHDATA1              : return "OP_PUSHDATA1";
-    case OP_PUSHDATA2              : return "OP_PUSHDATA2";
-    case OP_PUSHDATA4              : return "OP_PUSHDATA4";
+    case OP_PUSHDATA1              : return "PUSHDATA1";
+    case OP_PUSHDATA2              : return "PUSHDATA2";
+    case OP_PUSHDATA4              : return "PUSHDATA4";
     case OP_1NEGATE                : return "-1";
-    case OP_RESERVED               : return "OP_RESERVED";
+    case OP_RESERVED               : return "RESERVED";
     case OP_1                      : return "1";
     case OP_2                      : return "2";
     case OP_3                      : return "3";
@@ -185,87 +165,87 @@ const char* op_str(enum opcode opcode)
     case OP_16                     : return "16";
 
     // control
-    case OP_NOP                    : return "OP_NOP";
-    case OP_VER                    : return "OP_VER";
-    case OP_IF                     : return "OP_IF";
-    case OP_NOTIF                  : return "OP_NOTIF";
-    case OP_VERIF                  : return "OP_VERIF";
-    case OP_VERNOTIF               : return "OP_VERNOTIF";
-    case OP_ELSE                   : return "OP_ELSE";
-    case OP_ENDIF                  : return "OP_ENDIF";
-    case OP_VERIFY                 : return "OP_VERIFY";
-    case OP_RETURN                 : return "OP_RETURN";
+    case OP_NOP                    : return "NOP";
+    case OP_VER                    : return "VER";
+    case OP_IF                     : return "IF";
+    case OP_NOTIF                  : return "NOTIF";
+    case OP_VERIF                  : return "VERIF";
+    case OP_VERNOTIF               : return "VERNOTIF";
+    case OP_ELSE                   : return "ELSE";
+    case OP_ENDIF                  : return "ENDIF";
+    case OP_VERIFY                 : return "VERIFY";
+    case OP_RETURN                 : return "RETURN";
 
     // stack ops
-    case OP_TOALTSTACK             : return "OP_TOALTSTACK";
-    case OP_FROMALTSTACK           : return "OP_FROMALTSTACK";
-    case OP_2DROP                  : return "OP_2DROP";
-    case OP_2DUP                   : return "OP_2DUP";
-    case OP_3DUP                   : return "OP_3DUP";
-    case OP_2OVER                  : return "OP_2OVER";
-    case OP_2ROT                   : return "OP_2ROT";
-    case OP_2SWAP                  : return "OP_2SWAP";
-    case OP_IFDUP                  : return "OP_IFDUP";
-    case OP_DEPTH                  : return "OP_DEPTH";
-    case OP_DROP                   : return "OP_DROP";
-    case OP_DUP                    : return "OP_DUP";
-    case OP_NIP                    : return "OP_NIP";
-    case OP_OVER                   : return "OP_OVER";
-    case OP_PICK                   : return "OP_PICK";
-    case OP_ROLL                   : return "OP_ROLL";
-    case OP_ROT                    : return "OP_ROT";
-    case OP_SWAP                   : return "OP_SWAP";
-    case OP_TUCK                   : return "OP_TUCK";
+    case OP_TOALTSTACK             : return "TOALTSTACK";
+    case OP_FROMALTSTACK           : return "FROMALTSTACK";
+    case OP_2DROP                  : return "2DROP";
+    case OP_2DUP                   : return "2DUP";
+    case OP_3DUP                   : return "3DUP";
+    case OP_2OVER                  : return "2OVER";
+    case OP_2ROT                   : return "2ROT";
+    case OP_2SWAP                  : return "2SWAP";
+    case OP_IFDUP                  : return "IFDUP";
+    case OP_DEPTH                  : return "DEPTH";
+    case OP_DROP                   : return "DROP";
+    case OP_DUP                    : return "DUP";
+    case OP_NIP                    : return "NIP";
+    case OP_OVER                   : return "OVER";
+    case OP_PICK                   : return "PICK";
+    case OP_ROLL                   : return "ROLL";
+    case OP_ROT                    : return "ROT";
+    case OP_SWAP                   : return "SWAP";
+    case OP_TUCK                   : return "TUCK";
 
     // splice ops
-    case OP_CAT                    : return "OP_CAT";
-    case OP_NOT                    : return "OP_NOT";
-    case OP_0NOTEQUAL              : return "OP_0NOTEQUAL";
-    case OP_ADD                    : return "OP_ADD";
-    case OP_SUB                    : return "OP_SUB";
-    case OP_MUL                    : return "OP_MUL";
-    case OP_DIV                    : return "OP_DIV";
-    case OP_MOD                    : return "OP_MOD";
-    case OP_LSHIFT                 : return "OP_LSHIFT";
-    case OP_RSHIFT                 : return "OP_RSHIFT";
-    case OP_BOOLAND                : return "OP_BOOLAND";
-    case OP_BOOLOR                 : return "OP_BOOLOR";
-    case OP_NUMEQUAL               : return "OP_NUMEQUAL";
-    case OP_NUMEQUALVERIFY         : return "OP_NUMEQUALVERIFY";
-    case OP_NUMNOTEQUAL            : return "OP_NUMNOTEQUAL";
-    case OP_LESSTHAN               : return "OP_LESSTHAN";
-    case OP_GREATERTHAN            : return "OP_GREATERTHAN";
-    case OP_LESSTHANOREQUAL        : return "OP_LESSTHANOREQUAL";
-    case OP_GREATERTHANOREQUAL     : return "OP_GREATERTHANOREQUAL";
-    case OP_MIN                    : return "OP_MIN";
-    case OP_MAX                    : return "OP_MAX";
-    case OP_WITHIN                 : return "OP_WITHIN";
+    case OP_CAT                    : return "CAT";
+    case OP_NOT                    : return "NOT";
+    case OP_0NOTEQUAL              : return "0NOTEQUAL";
+    case OP_ADD                    : return "ADD";
+    case OP_SUB                    : return "SUB";
+    case OP_MUL                    : return "MUL";
+    case OP_DIV                    : return "DIV";
+    case OP_MOD                    : return "MOD";
+    case OP_LSHIFT                 : return "LSHIFT";
+    case OP_RSHIFT                 : return "RSHIFT";
+    case OP_BOOLAND                : return "BOOLAND";
+    case OP_BOOLOR                 : return "BOOLOR";
+    case OP_NUMEQUAL               : return "NUMEQUAL";
+    case OP_NUMEQUALVERIFY         : return "NUMEQUALVERIFY";
+    case OP_NUMNOTEQUAL            : return "NUMNOTEQUAL";
+    case OP_LESSTHAN               : return "LESSTHAN";
+    case OP_GREATERTHAN            : return "GREATERTHAN";
+    case OP_LESSTHANOREQUAL        : return "LESSTHANOREQUAL";
+    case OP_GREATERTHANOREQUAL     : return "GREATERTHANOREQUAL";
+    case OP_MIN                    : return "MIN";
+    case OP_MAX                    : return "MAX";
+    case OP_WITHIN                 : return "WITHIN";
 
     // crypto
-    case OP_RIPEMD160              : return "OP_RIPEMD160";
-    case OP_SHA1                   : return "OP_SHA1";
-    case OP_SHA256                 : return "OP_SHA256";
-    case OP_HASH160                : return "OP_HASH160";
-    case OP_HASH256                : return "OP_HASH256";
-    case OP_CODESEPARATOR          : return "OP_CODESEPARATOR";
-    case OP_CHECKSIG               : return "OP_CHECKSIG";
-    case OP_CHECKSIGVERIFY         : return "OP_CHECKSIGVERIFY";
-    case OP_CHECKMULTISIG          : return "OP_CHECKMULTISIG";
-    case OP_CHECKMULTISIGVERIFY    : return "OP_CHECKMULTISIGVERIFY";
+    case OP_RIPEMD160              : return "RIPEMD160";
+    case OP_SHA1                   : return "SHA1";
+    case OP_SHA256                 : return "SHA256";
+    case OP_HASH160                : return "HASH160";
+    case OP_HASH256                : return "HASH256";
+    case OP_CODESEPARATOR          : return "CODESEPARATOR";
+    case OP_CHECKSIG               : return "CHECKSIG";
+    case OP_CHECKSIGVERIFY         : return "CHECKSIGVERIFY";
+    case OP_CHECKMULTISIG          : return "CHECKMULTISIG";
+    case OP_CHECKMULTISIGVERIFY    : return "CHECKMULTISIGVERIFY";
 
     // expansion
-    case OP_NOP1                   : return "OP_NOP1";
-    case OP_CHECKLOCKTIMEVERIFY    : return "OP_CHECKLOCKTIMEVERIFY";
-    case OP_CHECKSEQUENCEVERIFY    : return "OP_CHECKSEQUENCEVERIFY";
-    case OP_NOP4                   : return "OP_NOP4";
-    case OP_NOP5                   : return "OP_NOP5";
-    case OP_NOP6                   : return "OP_NOP6";
-    case OP_NOP7                   : return "OP_NOP7";
-    case OP_NOP8                   : return "OP_NOP8";
-    case OP_NOP9                   : return "OP_NOP9";
-    case OP_NOP10                  : return "OP_NOP10";
+    case OP_NOP1                   : return "NOP1";
+    case OP_CHECKLOCKTIMEVERIFY    : return "CHECKLOCKTIMEVERIFY";
+    case OP_CHECKSEQUENCEVERIFY    : return "CHECKSEQUENCEVERIFY";
+    case OP_NOP4                   : return "NOP4";
+    case OP_NOP5                   : return "NOP5";
+    case OP_NOP6                   : return "NOP6";
+    case OP_NOP7                   : return "NOP7";
+    case OP_NOP8                   : return "NOP8";
+    case OP_NOP9                   : return "NOP9";
+    case OP_NOP10                  : return "NOP10";
 
-    case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
+    case OP_INVALIDOPCODE          : return "INVALIDOPCODE";
 
     // Note:
     //  The template matching params OP_SMALLINTEGER/etc are defined in opcodetype enum
@@ -273,8 +253,71 @@ const char* op_str(enum opcode opcode)
     //  Script, just let the default: case deal with them.
 
     default:
-        return "OP_UNKNOWN";
+        return "UNKNOWN";
     }
 }
 
 
+
+
+static u32
+hash_fnv(u32 d, const char *str) {
+  u8 *p = (u8*)str;
+
+  if (d == 0)
+    d = 0x01000193;
+
+  while(*p)
+    d = ((d * 0x01000193) ^ *p++) & 0xffffffff;
+
+  return d;
+}
+
+
+enum opcode_token
+op_hash(const char *str) {
+  int d = opcodes_g[hash_fnv(0, str) % ARRAY_SIZE(opcodes_g)];
+  if (d < 0) d = opcodes_v[-d-1];
+  else       d = opcodes_v[hash_fnv(d, str) % ARRAY_SIZE(opcodes_v)];
+  return d;
+}
+
+
+
+const char *
+op_normalized_tok(const char *tok, int hash) {
+  if (hash != _OP_TRUE  &&
+      hash != _OP_FALSE &&
+      hash != _OP_NOP2  &&
+      hash != _OP_NOP3) return tok;
+
+  if (strcmp(tok, "TRUE") == 0) return "1";
+  else if (strcmp(tok, "FALSE") == 0) return "0";
+  else if (strcmp(tok, "NOP2") == 0) return "CHECKLOCKTIMEVERIFY";
+  else if (strcmp(tok, "NOP3") == 0) return "CHECKSEQUENCEVERIFY";
+
+  return tok;
+}
+
+
+enum opcode
+op_parse_opcode(const char *str) {
+  int hash     = op_hash(str);
+  int maybe_op = op_from_token(hash);
+
+  if (strcmp(op_str(maybe_op), op_normalized_tok(str, hash)) == 0)
+    return maybe_op;
+  else
+    return OP_INVALIDOPCODE;
+}
+
+
+enum opcode
+op_tokenize(char *str) {
+  int i;
+
+  for (i = 0; str[i]; ++i)
+    str[i] = toupper(str[i]);
+
+  return op_parse_opcode(str);
+}

@@ -16,8 +16,10 @@
 [ \t]	; // ignore all whitespace
 \n		               {return T_NEWLINE;}
 
-(op_)?[a-zA-Z0-9]+ {
-  yylval = op_tokenize(yytext);
+[oO][pP]_ {}
+
+[a-zA-Z0-9]+ {
+  yylval.opcode = op_tokenize(yytext);
   return T_OP;
 }
 

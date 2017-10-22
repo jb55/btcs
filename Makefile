@@ -1,13 +1,17 @@
 
+CFLAGS=-O2
 
-GEN=parser.tab.c parser.tab.h lex.yy.c oplookup.c
-DEPS=script.c parser.tab.c lex.yy.c oplookup.c
+GEN=parser.tab.c parser.tab.h lex.yy.c oplookup.c oplookup.o script.o
+FORBIN=script.o parser.tab.c lex.yy.c oplookup.o
+DEPS=oplookup.h script.h misc.h Makefile
+
 PREFIX ?= /usr/local
 BIN=bcs
 
+
 all: $(BIN)
 
-oplookup.c: opcodes
+oplookup.c: opcodes mph-opcodes
 	@./mph-opcodes opcodes > $@
 
 parser.tab.c parser.tab.h:	parser.y
@@ -20,8 +24,8 @@ install: $(BIN)
 	mkdir -p $(PREFIX)/bin
 	cp $(BIN) $(PREFIX)/bin
 
-$(BIN): $(GEN) $(DEPS)
-	$(CC) -O0 -g -o $@ $(DEPS)
+$(BIN): $(GEN) $(DEPS) $(FORBIN)
+	$(CC) $(CFLAGS) -o $@ $(FORBIN)
 
 clean:
 	rm -f $(GEN)
