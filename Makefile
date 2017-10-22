@@ -1,7 +1,7 @@
 
 CFLAGS=-O2
 
-GEN=parser.tab.c parser.tab.h lex.yy.c oplookup.c oplookup.o script.o
+GEN=parser.tab.c parser.tab.h lex.yy.c oplookup.c oplookup.o script.o oplookup.h
 FORBIN=script.o parser.tab.c lex.yy.c oplookup.o
 DEPS=oplookup.h script.h misc.h Makefile
 
@@ -11,8 +11,8 @@ BIN=btcs
 
 all: $(BIN)
 
-oplookup.c: opcodes mph-opcodes
-	@./mph-opcodes opcodes > $@
+oplookup.c oplookup.h: opcodes mph-opcodes
+	@./mph-opcodes opcodes
 
 parser.tab.c parser.tab.h:	parser.y
 	bison -d parser.y
