@@ -135,8 +135,8 @@ op_from_token(enum opcode_token opcode) {
   }
 }
 
-
-const char* op_str(enum opcode opcode)
+const char*
+op_name(enum opcode opcode)
 {
     switch (opcode)
     {
@@ -199,6 +199,28 @@ const char* op_str(enum opcode opcode)
 
     // splice ops
     case OP_CAT                    : return "CAT";
+    case OP_SUBSTR                 : return "SUBSTR";
+    case OP_LEFT                   : return "LEFT";
+    case OP_RIGHT                  : return "RIGHT";
+    case OP_SIZE                   : return "SIZE";
+
+    // bit logic
+    case OP_INVERT                 : return "INVERT";
+    case OP_AND                    : return "AND";
+    case OP_OR                     : return "OR";
+    case OP_XOR                    : return "XOR";
+    case OP_EQUAL                  : return "EQUAL";
+    case OP_EQUALVERIFY            : return "EQUALVERIFY";
+    case OP_RESERVED1              : return "RESERVED1";
+    case OP_RESERVED2              : return "RESERVED2";
+
+    // numeric
+    case OP_1ADD                   : return "1ADD";
+    case OP_1SUB                   : return "1SUB";
+    case OP_2MUL                   : return "2MUL";
+    case OP_2DIV                   : return "2DIV";
+    case OP_NEGATE                 : return "NEGATE";
+    case OP_ABS                    : return "ABS";
     case OP_NOT                    : return "NOT";
     case OP_0NOTEQUAL              : return "0NOTEQUAL";
     case OP_ADD                    : return "ADD";
@@ -305,7 +327,7 @@ op_parse_opcode(const char *str) {
   int hash     = op_hash(str);
   int maybe_op = op_from_token(hash);
 
-  if (strcmp(op_str(maybe_op), op_normalized_tok(str, hash)) == 0)
+  if (strcmp(op_name(maybe_op), op_normalized_tok(str, hash)) == 0)
     return maybe_op;
   else
     return OP_INVALIDOPCODE;

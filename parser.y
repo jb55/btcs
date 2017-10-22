@@ -32,7 +32,7 @@ script:
 ;
 
 line: T_NEWLINE
-    | T_OP line { printf("%s\n", op_str($1)); }
+    | T_OP { printf("%s\n", op_name($1)); }
 
 /* opcode: */
 /*       | T_OP { op_add($$); } */

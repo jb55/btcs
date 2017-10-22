@@ -296,7 +296,7 @@ enum opcode_token
 };
 
 void         op_add(enum opcode);
-const char * op_str(enum opcode);
+const char * op_name(enum opcode);
 enum opcode  op_tokenize(char *);
 
 #endif /* BCS_SCRIPT_H */
