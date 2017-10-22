@@ -1,0 +1,6 @@
+*.o
+/parser.tab.h
+/parser.tab.c
+/oplookup.c
+/lex.yy.c
+/bcs
