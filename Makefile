@@ -6,7 +6,7 @@ FORBIN=script.o parser.tab.c lex.yy.c oplookup.o
 DEPS=oplookup.h script.h misc.h Makefile
 
 PREFIX ?= /usr/local
-BIN=bcs
+BIN=btcs
 
 
 all: $(BIN)
