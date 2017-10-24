@@ -103,13 +103,13 @@ Vstrs = ",".join(map(str, V))
 header = open('oplookup.h', 'w')
 
 header.write("#include \"misc.h\"\n")
-header.write("extern int opcodes_g[{}];\n".format(len(G)))
-header.write("extern int opcodes_v[{}];\n".format(len(V)))
+header.write("extern const int opcodes_g[{}];\n".format(len(G)))
+header.write("extern const int opcodes_v[{}];\n".format(len(V)))
 header.close()
 
 cfile = open('oplookup.c', 'w')
 
 cfile.write("#include \"oplookup.h\"\n".format(Gstrs))
-cfile.write("int opcodes_g[{}] = {{ {} }};\n".format(len(G), Gstrs))
-cfile.write("int opcodes_v[{}] = {{ {} }};\n".format(len(V), Vstrs))
+cfile.write("const int opcodes_g[{}] = {{ {} }};\n".format(len(G), Gstrs))
+cfile.write("const int opcodes_v[{}] = {{ {} }};\n".format(len(V), Vstrs))
 cfile.close()

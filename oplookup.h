@@ -1,3 +1,3 @@
 #include "misc.h"
-extern int opcodes_g[120];
-extern int opcodes_v[120];
+extern const int opcodes_g[120];
+extern const int opcodes_v[120];
