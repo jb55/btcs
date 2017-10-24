@@ -18,6 +18,10 @@
 
 \<[^\>]+\> { yylval.str = yytext; return T_EXAMPLE; }
 
+\[[^\]]+\] { yylval.str = yytext; return T_EXAMPLE; }
+
+
+
 [oO][pP]_ {}
 
 [a-zA-Z0-9]+ {

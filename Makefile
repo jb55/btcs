@@ -2,8 +2,8 @@
 CFLAGS=-O2
 
 GEN=parser.tab.c parser.tab.h lex.yy.c oplookup.c oplookup.o script.o oplookup.h
-FORBIN=script.o parser.tab.c lex.yy.c oplookup.o
-DEPS=oplookup.h script.h misc.h Makefile
+FORBIN=script.o parser.tab.c lex.yy.c oplookup.o op.o
+DEPS=oplookup.h script.h misc.h Makefile op.h
 
 PREFIX ?= /usr/local
 BIN=btcs
