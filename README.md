@@ -9,9 +9,10 @@
 
 ## TODOs
 
-- [ ] Script evaluator
-- [ ] Script compiler
-- [ ] Script decompiler
+- [X] Tokenizer
+- [ ] Evaluator
+- [ ] Compiler
+- [ ] Decompiler
 
 ## Usage
 
