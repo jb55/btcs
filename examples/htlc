@@ -1,0 +1,7 @@
+OP_IF
+    [HASHOP] <digest> OP_EQUALVERIFY OP_DUP OP_HASH160 <seller pubkey hash>            
+OP_ELSE
+    <num> [TIMEOUTOP] OP_DROP OP_DUP OP_HASH160 <buyer pubkey hash>
+OP_ENDIF
+OP_EQUALVERIFY
+OP_CHECKSIG
