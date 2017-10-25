@@ -102,13 +102,21 @@ Vstrs = ",".join(map(str, V))
 
 header = open('oplookup.h', 'w')
 
+
+
+header.write("/* THIS IS GENERATED FROM mph-opcodes DO NOT EDIT */\n\n")
+header.write("#ifndef BCS_OPLOOKUP_H\n")
+header.write("#define BCS_OPLOOKUP_H\n\n")
+
 header.write("#include \"misc.h\"\n")
 header.write("extern const int opcodes_g[{}];\n".format(len(G)))
 header.write("extern const int opcodes_v[{}];\n".format(len(V)))
+header.write("\n#endif /* BCS_OPLOOKUP_H */\n")
 header.close()
 
 cfile = open('oplookup.c', 'w')
 
+cfile.write("/* THIS IS GENERATED FROM mph-opcodes DO NOT EDIT */\n\n")
 cfile.write("#include \"oplookup.h\"\n".format(Gstrs))
 cfile.write("const int opcodes_g[{}] = {{ {} }};\n".format(len(G), Gstrs))
 cfile.write("const int opcodes_v[{}] = {{ {} }};\n".format(len(V), Vstrs))
