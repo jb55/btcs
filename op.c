@@ -1,6 +1,7 @@
 
 #include "script.h"
 #include "oplookup.h"
+#include "op.h"
 #include "misc.h"
 
 #include <stdio.h>
@@ -274,8 +275,11 @@ op_name(enum opcode opcode)
     //  as kind of implementation hack, they are *NOT* real opcodes.  If found in real
     //  Script, just let the default: case deal with them.
 
-    default:
-        return "UNKNOWN";
+    default: {
+      static char buf[32];
+      sprintf(buf, "%02x", opcode);
+      return buf;
+    }
     }
 }
 
@@ -343,3 +347,5 @@ op_tokenize(char *str) {
 
   return op_parse_opcode(str);
 }
+
+
