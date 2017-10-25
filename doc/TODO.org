@@ -10,6 +10,12 @@
     0x<hex> is just treated like literal serialized part of the script.. you're
     probably already on it, but just my pov :)
     
+    11:16 <arubi> the behavior is pretty similar really, segwit serializes the
+    codesep while legacy doesn't. segwit makes checksig ops a lot easier because
+    of the better sighash scheme in bip143. there are so many interesting
+    sighash types, and there are probably going to be more eventually, that
+    implementing legacy just seems like a waste of time now
+
 * Evaluator
 
 Some things to consider
