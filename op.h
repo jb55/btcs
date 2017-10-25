@@ -1,6 +1,7 @@
 
-#ifndef BCS_SCRIPT_H
-#define BCS_SCRIPT_H
+#ifndef BCS_OP_H
+#define BCS_OP_H
+
 
 enum opcode
 {
@@ -295,8 +296,11 @@ enum opcode_token
     _OP_INVALIDOPCODE,
 };
 
+// Maximum value that an opcode can be
+static const unsigned int MAX_OPCODE = OP_NOP10;
+
 void         op_add(enum opcode);
 const char * op_name(enum opcode);
 enum opcode  op_tokenize(char *);
 
-#endif /* BCS_SCRIPT_H */
+#endif /* BCS_OP_H */

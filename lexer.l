@@ -3,9 +3,9 @@
 %{
 #include <stdio.h>
 #include "script.h"
+#include "op.h"
 
 #define YY_DECL int yylex()
-
 
 #include "parser.tab.h"
 
@@ -19,7 +19,6 @@
 \<[^\>]+\> { yylval.str = yytext; return T_EXAMPLE; }
 
 \[[^\]]+\] { yylval.str = yytext; return T_EXAMPLE; }
-
 
 
 [oO][pP]_ {}

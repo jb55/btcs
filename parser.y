@@ -1,17 +1,13 @@
 
 %{
-
 #include <stdio.h>
-#include <stdlib.h>
-#include "script.h"
+#include "op.h"
+#include "stack.h"
 
 extern int yylex();
-extern int yyparse();
-extern FILE* yyin;
-
-char buffer[255];
-
+extern struct stack reader_stack;
 void yyerror(const char* s);
+
 %}
 
 %union {
@@ -34,27 +30,8 @@ script:
 ;
 
 line: T_NEWLINE
-    | T_OP { printf("%s\n", op_name($1)); }
-    | T_EXAMPLE { printf("ex:%s\n", $1); }
-
-/* opcode: */
-/*       | T_OP { op_add($$); } */
-/*       ; */
+    | T_OP { stack_push(&reader_stack, $1); }
+    | T_EXAMPLE { ; }
 
 
 %%
-
-int main() {
-  yyin = stdin;
-
-  do {
-    yyparse();
-  } while(!feof(yyin));
-
-  return 0;
-}
-
-void yyerror(const char* s) {
-  fprintf(stderr, "Parse error: %s\n", s);
-  exit(1);
-}

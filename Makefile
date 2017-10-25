@@ -1,9 +1,17 @@
 
-CFLAGS=-O2
+CFLAGS=-O2 -Wall -Wno-unused-variable
 
-GEN=parser.tab.c parser.tab.h lex.yy.c oplookup.c oplookup.o script.o oplookup.h
-FORBIN=script.o parser.tab.c lex.yy.c oplookup.o op.o
-DEPS=oplookup.h script.h misc.h Makefile op.h
+FORBIN=script.o \
+       parser.tab.o \
+       lex.yy.o \
+       oplookup.o \
+       op.o \
+       main.o \
+       stack.o
+
+GEN=parser.tab.c parser.tab.h lex.yy.c oplookup.c oplookup.h $(FORBIN)
+
+DEPS=oplookup.h script.h misc.h Makefile op.h stack.h
 
 PREFIX ?= /usr/local
 BIN=btcs
