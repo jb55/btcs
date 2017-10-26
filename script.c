@@ -10,7 +10,7 @@ static int stack_end(struct stack *stack) {
 
 void script_add_error(const char *serror) {
   // TODO: set_error
-  printf("error: %s\n", serror);
+  fprintf(stderr, "error: %s\n", serror);
 }
 
 struct val
