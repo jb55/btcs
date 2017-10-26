@@ -40,9 +40,32 @@ stack_free(struct stack *stack) {
 }
 
 
-void
+int
 stack_expand(struct stack *stack) {
-  assert(!"Implement expand");
+  size_t newcap = stack->capacity * 2;
+  void **bottom = 0;
+  int size = stack_size(stack);
+
+#if DEBUG
+  printf("expanding s(%d) %d -> %d\n", size, stack->capacity, newcap);
+#endif
+
+  // XXX: might want to relax this to <= eventually
+  assert(size == stack->capacity);
+
+  if (stack->capacity <= DEFAULT_STACK_SIZE) {
+    bottom = malloc(newcap * sizeof(void*));
+    if (!bottom) return 0;
+    memcpy(bottom, stack->bottom, size * sizeof(void*));
+  }
+  else {
+    bottom = realloc(stack->bottom, newcap * sizeof(void*));
+    if (!bottom) return 0;
+  }
+  stack->capacity = newcap;
+  stack->bottom   = bottom;
+  stack->top      = bottom+size;
+  return 1;
 }
 
 void
