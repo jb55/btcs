@@ -1,6 +1,7 @@
 
 #include "stack.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 void
@@ -11,7 +12,7 @@ stack_clear(struct stack *stack) {
 int
 stack_init_size(struct stack *stack, int capacity) {
   if (capacity > DEFAULT_STACK_SIZE) {
-    u8 *bottom = (u8*)malloc(capacity);
+    void *bottom = malloc(capacity * sizeof(void*));
     if (!bottom) return 0;
     stack->bottom   = bottom;
     stack->top      = bottom;
@@ -45,11 +46,35 @@ stack_expand(struct stack *stack) {
 }
 
 void
-stack_push(struct stack *stack, u8 byte) {
+stack_push(struct stack *stack, void *val) {
+  #if DEBUG
+  printf("pushing: %d %p\n", stack_size(stack), val);
+  #endif
+
   if ((stack_size(stack) + 1) > stack->capacity) {
     stack_expand(stack);
   }
 
-  *stack->top++ = byte;
+  *stack->top++ = val;
+}
+
+// TODO: UNTESTED!
+void *
+stack_erase(struct stack *stack, int ind) {
+  int size = stack_size(stack);
+  assert(ind >= 0);
+  assert(ind < size);
+  void * erased = *(stack->bottom + ind);
+  memcpy(stack->bottom + ind, stack->bottom + ind + size, size);
+  stack->top--;
+  return erased;
+}
+
+void *
+stack_pop(struct stack *stack) {
+  assert(stack_size(stack) != 0);
+  void * v = stack_top(stack, -1);
+  stack->top--;
+  return v;
 }
 

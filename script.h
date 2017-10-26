@@ -22,12 +22,14 @@ static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20
 
 struct script {
   struct stack data;
+  struct stack pushdata; // a stack of pushdata stacks
 };
 
 int  script_new(struct script *);
 void script_free(struct script *);
 void script_eval(struct stack *, struct stack*);
-void script_print(struct stack *);
+void script_print_ops(struct stack *);
+void script_print_vals(struct stack *);
 
 
 #endif /* BTCS_SCRIPT_H */

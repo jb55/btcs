@@ -24,9 +24,9 @@ int main() {
 
   script_eval(&reader_stack, &tmp_stack);
   printf("script: ");
-  script_print(&reader_stack);
+  script_print_ops(&reader_stack);
   printf("stack:  ");
-  script_print(&tmp_stack);
+  script_print_vals(&tmp_stack);
 
   stack_free(&reader_stack);
   stack_free(&tmp_stack);

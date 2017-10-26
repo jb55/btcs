@@ -1,5 +1,5 @@
 
-CFLAGS=-O2 -Wall -Wno-unused-variable
+CFLAGS=-O0 -g -Wall -Wno-unused-variable
 
 FORBIN=script.o \
        parser.tab.o \

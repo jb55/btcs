@@ -349,3 +349,16 @@ op_tokenize(char *str) {
 }
 
 
+void
+val_print(struct val val) {
+  printf("%d", val.val);
+}
+
+const char *
+val_name(struct val val) {
+  switch(val.type) {
+  case VT_INT:  return val.is_big? "bi" : "ci"; break;
+  case VT_DATA: return val.is_big? "bd" : "cd"; break;
+  }
+  return "UNK_VAL";
+}

@@ -30,7 +30,7 @@ script:
 ;
 
 line: T_NEWLINE
-    | T_OP { stack_push(&reader_stack, $1); }
+    | T_OP { stack_push_small(&reader_stack, &$1, 4); }
     | T_EXAMPLE { ; }
 
 
