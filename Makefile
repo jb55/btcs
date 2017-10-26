@@ -1,23 +1,35 @@
 
 CFLAGS=-O0 -g -Wall -Wno-unused-variable
 
-FORBIN=script.o \
-       parser.tab.o \
-       lex.yy.o \
-       oplookup.o \
-       op.o \
-       main.o \
-       stack.o
+OBJS=script.o \
+     parser.tab.o \
+     lex.yy.o \
+     oplookup.o \
+     op.o \
+     main.o \
+     stack.o
 
-GEN=parser.tab.c parser.tab.h lex.yy.c oplookup.c oplookup.h $(FORBIN)
+GEN=parser.tab.c \
+    parser.tab.h \
+    lex.yy.c \
+    oplookup.c \
+    oplookup.h \
+    $(OBJS)
 
 DEPS=oplookup.h script.h misc.h Makefile op.h stack.h
 
 PREFIX ?= /usr/local
 BIN=btcs
 
-
 all: $(BIN)
+
+include $(OBJS:.o=.d)
+
+op.c: oplookup.h oplookup.c
+
+%.d: %.c
+	@rm -f $@; \
+	$(CC) -MM $(CFLAGS) $< > $@
 
 oplookup.c oplookup.h: opcodes mph-opcodes
 	@./mph-opcodes opcodes
@@ -32,8 +44,14 @@ install: $(BIN)
 	mkdir -p $(PREFIX)/bin
 	cp $(BIN) $(PREFIX)/bin
 
-$(BIN): $(GEN) $(DEPS) $(FORBIN)
-	$(CC) $(CFLAGS) -o $@ $(FORBIN)
+$(BIN): $(GEN) $(DEPS) $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS)
 
 clean:
 	rm -f $(GEN)
+	rm -f *.d
+
+TAGS:
+	etags -o - *.c > $@
+
+.PHONY: TAGS
