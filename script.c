@@ -9,6 +9,11 @@ void script_add_error(const char *serror) {
   fprintf(stderr, "error: %s\n", serror);
 }
 
+void script_add_warning(const char *warning) {
+  // TODO: set_error
+  fprintf(stderr, "warning: %s\n", warning);
+}
+
 struct val
 script_num(int n) {
   // TODO: scriptnum arithmetic

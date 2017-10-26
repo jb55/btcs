@@ -7,6 +7,7 @@
 void
 stack_clear(struct stack *stack) {
   memset(stack->bottom, 0, stack->capacity);
+  stack->top = stack->bottom;
 }
 
 int

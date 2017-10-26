@@ -1,22 +1,32 @@
 
-CFLAGS=-O0 -g -Wall -Wno-unused-variable
+CFLAGS=-O0 -Ideps -std=c99 -g -Wall -Wno-unused-variable -Wno-unused-function
 
-OBJS=script.o \
-     parser.tab.o \
-     lex.yy.o \
-     oplookup.o \
-     op.o \
-     main.o \
-     stack.o
+DEPS=script.c \
+     oplookup.c \
+     op.c \
+     stack.c
+
+CLIDEPS=parser.tab.c \
+				lex.yy.c \
+        main.c
+
+TESTDEPS=test.c
+
+# DEPS=oplookup.h script.h misc.h Makefile op.h stack.h
+TESTDEPS+=$(wildcard deps/*/*.c)
+OBJS=$(DEPS:.c=.o)
+CLIOBJS=$(CLIDEPS:.c=.o)
+TESTOBJS=$(TESTDEPS:.c=.o)
 
 GEN=parser.tab.c \
     parser.tab.h \
     lex.yy.c \
     oplookup.c \
     oplookup.h \
-    $(OBJS)
+    $(OBJS) \
+    $(CLIOBJS) \
+    $(TESTOBJS) \
 
-DEPS=oplookup.h script.h misc.h Makefile op.h stack.h
 
 PREFIX ?= /usr/local
 BIN=btcs
@@ -24,8 +34,11 @@ BIN=btcs
 all: $(BIN)
 
 include $(OBJS:.o=.d)
+include $(CLIOBJS:.o=.d)
+include $(TESTOBJS:.o=.d)
 
 op.c: oplookup.h oplookup.c
+
 
 %.d: %.c
 	@rm -f $@; \
@@ -44,8 +57,14 @@ install: $(BIN)
 	mkdir -p $(PREFIX)/bin
 	cp $(BIN) $(PREFIX)/bin
 
-$(BIN): $(GEN) $(DEPS) $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS)
+$(BIN): $(OBJS) $(CLIOBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(CLIOBJS)
+
+run_tests: $(OBJS) $(TESTOBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(TESTOBJS)
+
+test: run_tests
+	@./run_tests
 
 clean:
 	rm -f $(GEN)
@@ -54,4 +73,4 @@ clean:
 TAGS:
 	etags -o - *.c > $@
 
-.PHONY: TAGS
+.PHONY: TAGS test

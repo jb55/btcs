@@ -336,8 +336,12 @@ stack_push_val(struct stack *stack, struct val val) {
   val_print(val);
   printf("\n");
 #endif
-  void *tmp = 0;
   stack_push_small(stack, &val, sizeof(struct val));
+}
+
+static inline void
+stack_push_op(struct stack *stack, enum opcode opcode) {
+  stack_push_small(stack, &opcode, sizeof(enum opcode));
 }
 
 static inline struct val

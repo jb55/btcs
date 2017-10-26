@@ -1,6 +1,8 @@
 
 # btcs
 
+[![Build Status](https://travis-ci.org/jb55/btcs.svg)](https://travis-ci.org/jb55/btcs)
+
   bitcoin script parser/evaluator/compiler/decompiler
 
 ## Motivation
