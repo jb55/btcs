@@ -11,7 +11,7 @@
 static const int MAX_STACK_SIZE = 1000;
 
 // Maximum number of values on script interpreter stack
-static const int DEFAULT_STACK_SIZE = 100;
+static const int DEFAULT_STACK_SIZE = 32;
 
 struct stack {
   void *_data[DEFAULT_STACK_SIZE];
