@@ -47,7 +47,7 @@ stack_expand(struct stack *stack) {
 
 void
 stack_push(struct stack *stack, void *val) {
-  #if DEBUG
+  #if 0
   printf("pushing: %d %p\n", stack_size(stack), val);
   #endif
 

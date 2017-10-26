@@ -43,7 +43,7 @@ stack_size(struct stack *stack) {
 
 static inline void
 stack_push_small(struct stack *stack, void *p, size_t size) {
-#if DEBUG
+#if 0
   u8 *b = (u8*)p;
   printf("pushing small", "");
   for (size_t i = 0; i < size; ++i) {
