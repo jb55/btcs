@@ -329,6 +329,8 @@ enum opcode  op_tokenize(char *);
 void         val_print(struct val);
 const char * val_name(struct val);
 
+#define smallintval(n) ((struct val){ .is_big = 0, .type = VT_INT, .val = n })
+
 static inline void
 stack_push_val(struct stack *stack, struct val val) {
 #if 0

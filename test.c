@@ -35,8 +35,7 @@ TEST(test_simple) {
 
   script_eval(script, stack);
 
-  struct val one = { .is_big = 0, .type = VT_INT, .val = 1 };
-  stack_push_val(expected, one);
+  stack_push_val(expected, smallintval(1));
   ok_stacks_equal(stack, expected, "test_simple");
 }
 
@@ -47,8 +46,7 @@ TEST(test_nip) {
 
   script_eval(script, stack);
 
-  struct val two = { .is_big = 0, .type = VT_INT, .val = 2 };
-  stack_push_val(expected, two);
+  stack_push_val(expected, smallintval(2));
   ok_stacks_equal(stack, expected, "test_nip");
 }
 
