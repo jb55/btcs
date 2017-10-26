@@ -317,7 +317,7 @@ struct val {
   u32 val   : COMPACT_VAL_BITS;
 };
 
-STATIC_ASSERT(sizeof(struct val) <= 4, stack_op_doesnt_fit_in_stack);
+STATIC_ASSERT(sizeof(struct val) <= 4, val_doesnt_fit_in_stack);
 
 // Maximum value that an opcode can be
 static const unsigned int MAX_OPCODE = OP_NOP10;
