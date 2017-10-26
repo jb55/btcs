@@ -52,6 +52,7 @@ script_eval(struct stack *script, struct stack *stack) {
   struct val val;
   struct stack _altstack;
   struct stack *altstack = &_altstack;
+  int flags = 0;
   u8 tmpbuf[32];
   stack_init(altstack);
 
@@ -109,6 +110,41 @@ script_eval(struct stack *script, struct stack *stack) {
     break;
 
     case OP_NOP: break;
+
+    case OP_NOP1: case OP_NOP4: case OP_NOP5:
+    case OP_NOP6: case OP_NOP7: case OP_NOP8: case OP_NOP9: case OP_NOP10:
+      {
+        /* if (script->flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS) */
+        script_add_warning("SCRIPT_ERR_DISCOURAGE_UPGRADABLE_NOPS");
+      }
+      break;
+
+    /* case OP_IF: */
+    /* case OP_NOTIF: */
+    /* { */
+    /*     // <expression> if [statements] [else [statements]] endif */
+    /*     int fval = 0; */
+    /*     if (fExec) */
+    /*     { */
+    /*         if (stack.size() < 1) */
+    /*             return set_error(serror, SCRIPT_ERR_UNBALANCED_CONDITIONAL); */
+    /*         valtype& vch = stacktop(-1); */
+    /*         if (sigversion == SIGVERSION_WITNESS_V0 && (flags & SCRIPT_VERIFY_MINIMALIF)) { */
+    /*             if (vch.size() > 1) */
+    /*                 return set_error(serror, SCRIPT_ERR_MINIMALIF); */
+    /*             if (vch.size() == 1 && vch[0] != 1) */
+    /*                 return set_error(serror, SCRIPT_ERR_MINIMALIF); */
+    /*         } */
+    /*         fValue = CastToBool(vch); */
+    /*         if (opcode == OP_NOTIF) */
+    /*             fValue = !fValue; */
+    /*         popstack(stack); */
+    /*     } */
+    /*     vfExec.push_back(fValue); */
+    /* } */
+    /* break; */
+
+
     case OP_INVALIDOPCODE:
     {
       return script_add_error("SCRIPT_ERR_INVALID_OPCODE");
@@ -310,4 +346,5 @@ void script_free(struct script *script) {
 }
 
 int script_new(struct script *script) {
+  return 0;
 }
