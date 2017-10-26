@@ -252,7 +252,8 @@ script_eval(struct stack *script, struct stack *stack) {
         if (stack_size(stack) < 2)
             return script_add_error("SCRIPT_ERR_INVALID_STACK_OPERATION");
         // TODO: sanity check - stack_size() == stack_end(stack)
-        stack_erase(stack, stack_size(stack) - 2);
+        stack_set_val(stack, -2, stack_top_val(stack, -1));
+        stack_pop(stack);
     }
     break;
 
