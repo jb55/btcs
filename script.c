@@ -4,9 +4,10 @@
 #include "stack.h"
 #include <stdio.h>
 
-void script_add_error(const char *serror) {
+int script_add_error(const char *serror) {
   // TODO: set_error
   fprintf(stderr, "error: %s\n", serror);
+  return 0;
 }
 
 void script_add_warning(const char *warning) {
@@ -50,7 +51,7 @@ cast_to_bool(struct val val) {
   /* return false; */
 }
 
-void
+int
 script_eval(struct stack *script, struct stack *stack) {
   int op_count = 0;
   void **p = script->bottom;
@@ -312,6 +313,7 @@ script_eval(struct stack *script, struct stack *stack) {
     }
   }
 
+  return 1;
 }
 
 void script_print_ops(struct stack *stack) {

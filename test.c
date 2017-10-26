@@ -50,6 +50,14 @@ TEST(test_nip) {
   ok_stacks_equal(stack, expected, "test_nip");
 }
 
+TEST(test_2dup_not_enough_input) {
+  stack_push_op(script, OP_1);
+  stack_push_op(script, OP_2DUP);
+
+  int res = script_eval(script, stack);
+  ok(res == 0, "2dup fail on small stack");
+}
+
 
 static inline void
 run_test(struct stack *script, struct stack *stack, struct stack *expected,
@@ -69,7 +77,7 @@ main(int argc, char *argv[]) {
   struct stack *stack    = &_stack;
   struct stack *expected = &_expected;
 
-  plan(4);
+  plan(5);
 
   stack_init(script);
   stack_init(stack);
@@ -77,6 +85,7 @@ main(int argc, char *argv[]) {
 
   RUNTEST(test_simple);
   RUNTEST(test_nip);
+  RUNTEST(test_2dup_not_enough_input);
 
   stack_free(expected);
   stack_free(stack);

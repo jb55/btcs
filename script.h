@@ -27,7 +27,7 @@ struct script {
 
 int  script_new(struct script *);
 void script_free(struct script *);
-void script_eval(struct stack *, struct stack*);
+int  script_eval(struct stack *, struct stack*);
 void script_print_ops(struct stack *);
 void script_print_vals(struct stack *);
 
