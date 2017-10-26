@@ -1,7 +1,7 @@
 
 # btcs
 
-  bitcoin script toolbox
+  bitcoin script parser/evaluator/compiler/decompiler
 
 ## Motivation
 
@@ -16,7 +16,15 @@
 
 ## Usage
 
-  Just started this project. You can already tokenize BIP examples though!
+  Work in progress. Some OPs are working:
+
+```
+./btcs <<< '1 2 16 3dup 2swap'
+script: 1 2 16 3DUP 2SWAP 
+stack:  1 2 2 16 16 1
+```
+
+  It should tokenize everything at least, even BIP examples! syntax might change ;)
 
 ```
 ./btcs <<EOS
@@ -33,7 +41,7 @@ ENDIF
 EOS
 ```
 
-spits out
+  spits out
 
 ```
 IF
