@@ -39,7 +39,6 @@ include $(TESTOBJS:.o=.d)
 
 op.c: oplookup.h oplookup.c
 
-
 %.d: %.c
 	@rm -f $@; \
 	$(CC) -MM $(CFLAGS) $< > $@
@@ -73,4 +72,4 @@ clean:
 TAGS:
 	etags -o - *.c > $@
 
-.PHONY: TAGS test
+.PHONY: TAGS test clean

@@ -1,7 +1,7 @@
+#pragma GCC diagnostic ignored "-Wint-conversion"
 
 #include "script.h"
 #include "op.h"
-#include "ok/ok.h"
 #include "tap.c/tap.h"
 
 typedef void (program)(struct stack *script, struct stack *stack,\
