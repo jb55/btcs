@@ -4,10 +4,6 @@
 #include "stack.h"
 #include <stdio.h>
 
-static int stack_end(struct stack *stack) {
-  return stack_size(stack);
-}
-
 void script_add_error(const char *serror) {
   // TODO: set_error
   fprintf(stderr, "error: %s\n", serror);

@@ -134,6 +134,8 @@ op_from_token(enum opcode_token opcode) {
   case _OP_PUBKEY: return OP_PUBKEY;
   case _OP_INVALIDOPCODE: return OP_INVALIDOPCODE;
   }
+
+  return OP_INVALIDOPCODE;
 }
 
 const char*

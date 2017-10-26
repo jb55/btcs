@@ -308,8 +308,9 @@ enum valtype {
 // UPDATE VAL_TYPE_BITS if you need more valtypes
 
 
-static const int VAL_TYPE_BITS = 1;
-static const int COMPACT_VAL_BITS = (32-VAL_TYPE_BITS-1);
+#define VAL_TYPE_BITS 1
+/* static const int COMPACT_VAL_BITS = (32-VAL_TYPE_BITS-1); */
+#define COMPACT_VAL_BITS 30
 
 struct val {
   u8 is_big : 1;
