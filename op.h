@@ -338,12 +338,12 @@ stack_push_val(struct stack *stack, struct val val) {
   val_print(val);
   printf("\n");
 #endif
-  stack_push_small(stack, &val, sizeof(struct val));
+  stack_push_small(struct val, stack, &val);
 }
 
 static inline void
 stack_push_op(struct stack *stack, enum opcode opcode) {
-  stack_push_small(stack, &opcode, sizeof(enum opcode));
+  stack_push_small(enum opcode, stack, &opcode);
 }
 
 static inline struct val
