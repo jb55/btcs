@@ -2,6 +2,7 @@
 #include "script.h"
 #include "oplookup.h"
 #include "op.h"
+#include "alloc.h"
 #include "misc.h"
 
 #include <stdio.h>
@@ -353,14 +354,24 @@ op_tokenize(char *str) {
 
 void
 val_print(struct val val) {
-  printf("%d", val.val);
+  struct num *n;
+  switch(val.type) {
+  case VT_SCRIPTNUM:
+    assert(val.ind != -1);
+    n = num_pool_get(val.ind);
+    printf("%lu", n->val);
+    break;
+  default:
+    assert(!"val_print data");
+  }
 }
 
 const char *
 val_name(struct val val) {
   switch(val.type) {
-  case VT_INT:  return val.is_big? "bi" : "ci"; break;
-  case VT_DATA: return val.is_big? "bd" : "cd"; break;
+  case VT_SCRIPTNUM:  return "n"; break;
+  case VT_SMALLINT:  return "s"; break;
+  case VT_DATA: return "d"; break;
   }
   return "UNK_VAL";
 }

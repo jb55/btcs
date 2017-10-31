@@ -1,7 +1,9 @@
 
 #include "script.h"
 #include "op.h"
+#include "script_num.h"
 #include "stack.h"
+#include "alloc.h"
 #include <stdio.h>
 
 #define SCRIPTERR(serr) script_add_error(c, opcode, serr)
@@ -17,54 +19,44 @@ void script_add_warning(const char *warning) {
   fprintf(stderr, "warning: %s\n", warning);
 }
 
-struct val
-script_num(int n) {
-  // TODO: scriptnum arithmetic
-  struct val val;
-  val.type = VT_INT;
-  val.is_big = n > (2^COMPACT_VAL_BITS)-1;
-
-  if (!val.is_big) {
-    val.val = n;
-    return val;
-  }
-  else {
-    // looks like we have an int bigger than COMPACT_VAL_BITS in size,
-    // we'll need to store it in a buffer somewhere
-    assert(!"Implement script_num");
-  }
-}
-
 
 int
 cast_to_bool(struct val val) {
   // TODO: implement cast_to_bool
-  assert(!"Implement cast_to_bool");
-  /* for (unsigned int i = 0; i < vch.size(); i++) */
-  /*   { */
-  /*     if (vch[i] != 0) */
-  /*       { */
-  /*         // Can be negative zero */
-  /*         if (i == vch.size()-1 && vch[i] == 0x80) */
-  /*           return false; */
-  /*         return true; */
-  /*       } */
-  /*   } */
-  /* return false; */
+  switch (val.type) {
+  case VT_SCRIPTNUM: {
+    struct num *sn = num_pool_get(val.ind);
+    return sn->val != 0;
+  }
+  case VT_DATA: {
+    u16 len;
+    const char * bytes = byte_pool_get(val.ind, &len);
+    return *bytes != 0;
+  }
+  }
+  assert(!"Unhandled val.type in cast_to_bool");
 }
 
 int
 script_eval(struct stack *script, struct stack *stack) {
   int op_count = 0;
   void **p = script->bottom;
+  static const struct val val_true  = {.type = VT_SMALLINT, .ind  = 1};
+  static const struct val val_false = {.type = VT_SMALLINT, .ind  = 0};
+  static const struct num bn_one  = {.val = 1, .ind = -1};
+  static const struct num bn_zero = {.val = 0, .ind = -1};
   struct val val;
   struct stack _altstack;
   struct stack _ifstack;
   struct stack *altstack = &_altstack;
   struct stack *ifstack = &_ifstack;
-  int flags = 0;
+  int flags = CO_WARNINGS_ARE_ERRORS | CO_WARN_MINIMAL;
   int c = 0;
-  u8 tmpbuf[32];
+  // TODO: require minimal?
+  int require_minimal =
+    !(flags & ~(CO_WARNINGS_ARE_ERRORS | CO_WARN_MINIMAL));
+
+  char tmpbuf[32];
   stack_init(altstack);
   stack_init(ifstack);
 
@@ -76,6 +68,7 @@ script_eval(struct stack *script, struct stack *stack) {
     // TODO: pushdata ops
     assert(!(opcode >= OP_PUSHDATA1 && opcode <= OP_PUSHDATA4));
 
+    // Note OP_RESERVED does not count towards the opcode limit.
     if (opcode > OP_16 && ++op_count > MAX_OPS_PER_SCRIPT)
       SCRIPTERR("MAX_OPS_PER_SCRIPT");
 
@@ -118,8 +111,10 @@ script_eval(struct stack *script, struct stack *stack) {
     case OP_15:
     case OP_16:
     {
-      struct val sn = script_num((int)opcode - (int)(OP_1 - 1));
-      stack_push_val(stack, sn);
+      struct num sn;
+      sn_from_int((int)opcode - (int)(OP_1 - 1), &sn);
+      struct val val = sn_to_val(&sn);
+      stack_push_val(stack, val);
     }
     break;
 
@@ -268,8 +263,10 @@ script_eval(struct stack *script, struct stack *stack) {
     case OP_DEPTH:
     {
         // -- stacksize
-      struct val sn = script_num(stack_size(stack));
-      stack_push_val(stack, sn);
+      struct num sn;
+      sn_from_int(stack_size(stack), &sn);
+      struct val val = sn_to_val(&sn);
+      stack_push_val(stack, val);
     }
     break;
 
@@ -313,9 +310,236 @@ script_eval(struct stack *script, struct stack *stack) {
     }
     break;
 
+
+    case OP_PICK:
+    case OP_ROLL:
+    {
+        // (xn ... x2 x1 x0 n - xn ... x2 x1 x0 xn)
+        // (xn ... x2 x1 x0 n - ... x2 x1 x0 xn)
+        if (stack_size(stack) < 2)
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        struct num *n;
+
+        enum sn_result res =
+          sn_from_val(stack_top_val(stack, -1), &n, require_minimal);
+
+        if (res != SN_SUCCESS) {
+          sprintf(tmpbuf, "invalid scriptnum %d", res);
+          SCRIPTERR(tmpbuf);
+        }
+
+        stack_pop(stack);
+        if (n->val < 0 || n->val >= (int)stack_size(stack))
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        struct val val = stack_top_val(stack, (-(n->val))-1);
+        if (opcode == OP_ROLL)
+          assert(!"Finish OP_ROLL");
+            /* stack.erase(stack.end()-n-1); */
+        stack_push_val(stack, val);
+    }
+    break;
+
+    case OP_ROT:
+    {
+        // (x1 x2 x3 -- x2 x3 x1)
+        //  x2 x1 x3  after first swap
+        //  x2 x3 x1  after second swap
+        if (stack_size(stack) < 3)
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        stack_swap(stack, -3, -2);
+        stack_swap(stack, -2, -1);
+    }
+    break;
+
+    case OP_SWAP:
+    {
+      // (x1 x2 -- x2 x1)
+      if (stack_size(stack) < 2)
+        return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+      stack_swap(stack, -2, -1);
+    }
+    break;
+
+    case OP_TUCK:
+    {
+        // (x1 x2 -- x2 x1 x2)
+        if (stack_size(stack) < 2)
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        struct val val = stack_top_val(stack, -1);
+        stack_swap(stack, -2, -1);
+        stack_push(stack, stack_top(stack, -2));
+    }
+    break;
+
+
+    case OP_SIZE:
+    {
+        // (in -- in size)
+        if (stack_size(stack) < 1)
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        struct num sn;
+        sn_from_int(stack_size(stack) - 1, &sn);
+        struct val val = sn_to_val(&sn);
+        stack_push_val(stack, val);
+    }
+    break;
+
+
+    //
+    // Bitwise logic
+    //
+    case OP_EQUAL:
+    case OP_EQUALVERIFY:
+    //case OP_NOTEQUAL: // use OP_NUMNOTEQUAL
+    {
+        // (x1 x2 - bool)
+        if (stack_size(stack) < 2)
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        struct val v1 = stack_top_val(stack, -2);
+        struct val v2 = stack_top_val(stack, -1);
+        int equal = val_eq(v1, v2, require_minimal);
+        // OP_NOTEQUAL is disabled because it would be too easy to say
+        // something like n != 1 and have some wiseguy pass in 1 with extra
+        // zero bytes after it (numerically, 0x01 == 0x0001 == 0x000001)
+        //if (opcode == OP_NOTEQUAL)
+        //    fEqual = !fEqual;
+        stack_pop(stack);
+        stack_pop(stack);
+        stack_push_val(stack, equal ? val_true : val_false);
+        if (opcode == OP_EQUALVERIFY)
+        {
+            if (equal)
+                stack_pop(stack);
+            else
+                return SCRIPTERR("SCRIPT_ERR_EQUALVERIFY");
+        }
+    }
+    break;
+
+
+    //
+    // Numeric
+    //
+    case OP_1ADD:
+    case OP_1SUB:
+    case OP_NEGATE:
+    case OP_ABS:
+    case OP_NOT:
+    case OP_0NOTEQUAL:
+    {
+        // (in -- out)
+        if (stack_size(stack) < 1)
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        struct num *bn;
+        enum sn_result res =
+          sn_from_val(stack_top_val(stack, -1), &bn, require_minimal);
+
+        if (res != SN_SUCCESS) {
+          sprintf(tmpbuf, "invalid scriptnum %d", res);
+          SCRIPTERR(tmpbuf);
+        }
+
+        switch (opcode)
+        {
+        case OP_1ADD:       bn->val += 1; break;
+        case OP_1SUB:       bn->val -= 1; break;
+        case OP_NEGATE:     bn->val = -bn->val; break;
+        case OP_ABS:
+          if (bn->val < bn_zero.val)
+            bn->val = -(bn->val);
+          break;
+        case OP_NOT:        bn->val = (bn->val == 0); break;
+        case OP_0NOTEQUAL:  bn->val = (bn->val != 0); break;
+        default:            assert(!"invalid opcode"); break;
+        }
+        stack_pop(stack);
+        stack_push_val(stack, sn_to_val(bn));
+    }
+    break;
+
+    case OP_ADD:
+    case OP_SUB:
+    case OP_BOOLAND:
+    case OP_BOOLOR:
+    case OP_NUMEQUAL:
+    case OP_NUMEQUALVERIFY:
+    case OP_NUMNOTEQUAL:
+    case OP_LESSTHAN:
+    case OP_GREATERTHAN:
+    case OP_LESSTHANOREQUAL:
+    case OP_GREATERTHANOREQUAL:
+    case OP_MIN:
+    case OP_MAX:
+    {
+        // (x1 x2 -- out)
+        if (stack_size(stack) < 2)
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        struct num *bn1, *bn2, bn;
+        sn_from_val(stack_top_val(stack, -2), &bn1, require_minimal);
+        sn_from_val(stack_top_val(stack, -1), &bn2, require_minimal);
+        /* struct num bn(0); */
+        switch (opcode)
+        {
+        case OP_ADD:
+            bn.val = bn1->val + bn2->val;
+            break;
+
+        case OP_SUB:
+            bn.val = bn1->val - bn2->val;
+            break;
+
+        case OP_BOOLAND:             bn.val = bn1->val != 0 && bn2->val != 0;
+          break;
+        case OP_BOOLOR:              bn.val = bn1->val != 0 || bn2->val != 0;
+          break;
+        case OP_NUMEQUAL:            bn.val = bn1->val == bn2->val; break;
+        case OP_NUMEQUALVERIFY:      bn.val = bn1->val == bn2->val; break;
+        case OP_NUMNOTEQUAL:         bn.val = bn1->val != bn2->val; break;
+        case OP_LESSTHAN:            bn.val = bn1->val < bn2->val; break;
+        case OP_GREATERTHAN:         bn.val = bn1->val > bn2->val; break;
+        case OP_LESSTHANOREQUAL:     bn.val = bn1->val <= bn2->val; break;
+        case OP_GREATERTHANOREQUAL:  bn.val = bn1->val >= bn2->val; break;
+        case OP_MIN:
+          bn.val = bn1->val < bn2->val ? bn1->val : bn2->val;
+          break;
+        case OP_MAX:
+          bn.val = bn1->val > bn2->val ? bn1->val : bn2->val;
+          break;
+        default:                     assert(!"invalid opcode"); break;
+        }
+        stack_pop(stack);
+        stack_pop(stack);
+        stack_push_val(stack, sn_to_val(&bn));
+
+        if (opcode == OP_NUMEQUALVERIFY)
+        {
+            if (cast_to_bool(stack_top_val(stack, -1)))
+                stack_pop(stack);
+            else
+                return SCRIPTERR("SCRIPT_ERR_NUMEQUALVERIFY");
+        }
+    }
+    break;
+
+    case OP_WITHIN:
+    {
+        // (x min max -- out)
+        if (stack_size(stack) < 3)
+            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        struct num *bn1, *bn2, *bn3;
+        sn_from_val(stack_top_val(stack, -3), &bn1, require_minimal);
+        sn_from_val(stack_top_val(stack, -2), &bn2, require_minimal);
+        sn_from_val(stack_top_val(stack, -1), &bn3, require_minimal);
+        int fval = bn2->val <= bn1->val && bn1->val < bn3->val;
+        stack_pop(stack);
+        stack_pop(stack);
+        stack_pop(stack);
+        stack_push_val(stack, fval ? val_true : val_false);
+    }
+    break;
+
     default: {
-      sprintf((char*)tmpbuf, "unhandled opcode %s", op_name(opcode));
-      return SCRIPTERR((char*)tmpbuf);
+      return SCRIPTERR("unhandled opcode");
     }
 
     }

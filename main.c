@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "stack.h"
 #include "script.h"
+#include "alloc.h"
 
 extern int yyparse();
 extern FILE* yyin;
@@ -15,6 +16,7 @@ int main() {
   yyin = stdin;
 
   struct stack tmp_stack;
+  alloc_arenas(0, MAX_STACK_SIZE, MAX_STACK_SIZE * MAX_STACK_SIZE);
   stack_init(&reader_stack);
   stack_init(&tmp_stack);
 
@@ -30,6 +32,7 @@ int main() {
 
   stack_free(&reader_stack);
   stack_free(&tmp_stack);
+  free_arenas(0);
 
   return 0;
 }

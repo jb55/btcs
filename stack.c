@@ -96,6 +96,7 @@ stack_erase(struct stack *stack, int ind) {
 
 void *
 stack_pop(struct stack *stack) {
+  assert(stack);
   assert(stack_size(stack) != 0);
   void * v = stack_top(stack, -1);
   stack->top--;

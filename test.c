@@ -2,6 +2,7 @@
 
 #include "script.h"
 #include "op.h"
+#include "alloc.h"
 #include "tap.c/tap.h"
 
 typedef void (program)(struct stack *script, struct stack *stack,\
@@ -18,16 +19,27 @@ typedef void (program)(struct stack *script, struct stack *stack,\
 /*   stack_push_op(OP_1); */
 /* } */
 
+
 static inline void
 ok_stacks_equal(struct stack *s1, struct stack *s2, const char *context) {
   void **b1 = s1->bottom;
   void **b2 = s2->bottom;
+  struct val v1;
+  struct val v2;
 
   size_t s1size = stack_size(s1);
   size_t s2size = stack_size(s2);
 
   cmp_ok(s1size, "==", s2size, "%s: expected stack size", context);
-  is(memcmp(b1, b2, s1size*sizeof(void*)), 0, "%s: expected stack memory", context);
+
+  for (size_t i = 0; i < s1size; ++i) {
+    v1 = stack_top_val(s1, i);
+    v2 = stack_top_val(s2, i);
+
+    if (!val_eq(v1, v2, 0)) {
+      is(val_name(v1), val_name(v2), "%s: stack vals match", context);
+    }
+  }
 }
 
 TEST(test_simple) {
@@ -59,6 +71,23 @@ TEST(test_2dup_not_enough_input) {
 }
 
 
+// TODO test scriptnum overflows
+// TODO test scriptnum negative zero boolean logic
+// TODO test scriptnum add into overflow + hash
+// TODO test unpooled scriptnum index is == -1 for various constructors
+
+/* TODO test ops:
+ *
+ *    OP_1ADD
+ *    OP_1SUB
+ *    OP_NEGATE
+ *    OP_ABS
+ *    OP_NOT
+ *    OP_0NOTEQUAL
+ *
+ */
+
+
 static inline void
 run_test(struct stack *script, struct stack *stack, struct stack *expected,
          program *prog)
@@ -77,6 +106,8 @@ main(int argc, char *argv[]) {
   struct stack *stack    = &_stack;
   struct stack *expected = &_expected;
 
+  alloc_arenas();
+
   plan(5);
 
   stack_init(script);
@@ -90,6 +121,8 @@ main(int argc, char *argv[]) {
   stack_free(expected);
   stack_free(stack);
   stack_free(script);
+
+  free_arenas(0);
 
   done_testing();
   return 0;

@@ -4,6 +4,9 @@ CFLAGS=-O0 -Ideps -std=c99 -g -Wall -Wno-unused-variable -Wno-unused-function
 DEPS=script.c \
      oplookup.c \
      op.c \
+     val.c \
+     alloc.c \
+     script_num.c \
      stack.c
 
 CLIDEPS=parser.tab.c \

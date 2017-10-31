@@ -4,6 +4,7 @@
 
 #include "misc.h"
 #include "stack.h"
+#include "val.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -300,26 +301,6 @@ enum opcode_token
     _OP_INVALIDOPCODE,
 };
 
-enum valtype {
-  VT_INT=0,
-  VT_DATA, // this could be an overflowed int
-  VT_N
-};
-// UPDATE VAL_TYPE_BITS if you need more valtypes
-
-
-#define VAL_TYPE_BITS 1
-/* static const int COMPACT_VAL_BITS = (32-VAL_TYPE_BITS-1); */
-#define COMPACT_VAL_BITS 30
-
-struct val {
-  u8 is_big : 1;
-  u8 type   : VAL_TYPE_BITS;
-  u32 val   : COMPACT_VAL_BITS;
-};
-
-STATIC_ASSERT(sizeof(struct val) <= 4, val_doesnt_fit_in_stack);
-
 // Maximum value that an opcode can be
 static const unsigned int MAX_OPCODE = OP_NOP10;
 
@@ -328,8 +309,6 @@ const char * op_name(enum opcode);
 enum opcode  op_tokenize(char *);
 void         val_print(struct val);
 const char * val_name(struct val);
-
-#define smallintval(n) ((struct val){ .is_big = 0, .type = VT_INT, .val = n })
 
 static inline void
 stack_push_val(struct stack *stack, struct val val) {
@@ -344,20 +323,6 @@ stack_push_val(struct stack *stack, struct val val) {
 static inline void
 stack_push_op(struct stack *stack, enum opcode opcode) {
   stack_push_small(enum opcode, stack, &opcode);
-}
-
-static inline struct val
-stack_top_val(struct stack *stack, int ind) {
-  struct val val;
-  void *p = stack_top(stack, ind);
-  memcpy(&val, &p, sizeof(struct val));
-  return val;
-}
-
-static inline void
-stack_set_val(struct stack *stack, int ind, struct val val) {
-  struct val *pval = (struct val *)(stack->top + ind);
-  *pval = val;
 }
 
 
