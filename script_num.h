@@ -16,7 +16,7 @@ struct num {
 };
 
 void
-sn_from_int(int n, struct num *);
+sn_from_int(s64 n, struct num *);
 
 int
 sn_overflowed(struct num *num);
@@ -30,8 +30,8 @@ sn_to_val(struct num *sn);
 int
 sn_to_int(struct num *sn, int require_minimal);
 
-const char *
-sn_serialize(struct num *sn, u16 *len);
+void
+sn_serialize(struct num *sn, u8 *buf, int bufsize, u16 *len);
 
 
 static void inline

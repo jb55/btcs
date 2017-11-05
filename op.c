@@ -359,7 +359,10 @@ val_print(struct val val) {
   case VT_SCRIPTNUM:
     assert(val.ind != -1);
     n = num_pool_get(val.ind);
-    printf("%lu", n->val);
+    printf("sn:%lu", n->val);
+    break;
+  case VT_SMALLINT:
+    printf("si:%d", val.ind);
     break;
   default:
     assert(!"val_print data");

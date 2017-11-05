@@ -8,15 +8,20 @@
 
 #define SCRIPTERR(serr) script_add_error(c, opcode, serr)
 
+int g_silence_script_err = 0;
+int g_silence_script_warn = 0;
+
 int script_add_error(int c, enum opcode cur_op, const char *serror) {
   // TODO: set_error
-  fprintf(stderr, "error: %s @ op %d (%s)\n", serror, c, op_name(cur_op));
+  if (!g_silence_script_err)
+    fprintf(stderr, "error: %s @ op %d (%s)\n", serror, c, op_name(cur_op));
   return 0;
 }
 
 void script_add_warning(const char *warning) {
   // TODO: set_error
-  fprintf(stderr, "warning: %s\n", warning);
+  if (!g_silence_script_warn)
+    fprintf(stderr, "warning: %s\n", warning);
 }
 
 
@@ -38,9 +43,51 @@ cast_to_bool(struct val val) {
 }
 
 int
-script_eval(struct stack *script, struct stack *stack) {
+script_getop(u8 **p, u8 *end, enum opcode *opcode, u8 *buf, int bufsize, u32 *outlen) {
+  u32 nsize = 0;
+
+  *opcode = *(*p++);
+
+  if (*opcode > OP_PUSHDATA4)
+    return 1;
+
+  if (*opcode < OP_PUSHDATA1)
+    nsize = *opcode;
+  else if (*opcode == OP_PUSHDATA1) {
+    if (end - *p < 1)
+      return 0;
+    nsize = *(*p++);
+  }
+  else if (*opcode == OP_PUSHDATA2) {
+    if (end - *p < 2)
+      return 0;
+    nsize = readle16(*p);
+    *p += 2;
+  }
+  else if (*opcode == OP_PUSHDATA4) {
+    if (end - *p < 4)
+      return 0;
+    nsize = readle32(*p);
+    *p += 4;
+  }
+
+  if (buf) {
+    *outlen = nsize;
+    memcpy(buf, *p, nsize);
+    *p += nsize;
+  }
+
+  return 1;
+}
+
+
+int
+script_eval(u8 *script, size_t script_size, struct stack *stack) {
   int op_count = 0;
-  void **p = script->bottom;
+  u32 tmplen;
+  u8 *p = script;
+  u8 *top = script + script_size;
+  static char tmpbuf[32];
   static const struct val val_true  = {.type = VT_SMALLINT, .ind  = 1};
   static const struct val val_false = {.type = VT_SMALLINT, .ind  = 0};
   static const struct num bn_one  = {.val = 1, .ind = -1};
@@ -55,14 +102,13 @@ script_eval(struct stack *script, struct stack *stack) {
   // TODO: require minimal?
   int require_minimal =
     !(flags & ~(CO_WARNINGS_ARE_ERRORS | CO_WARN_MINIMAL));
-
-  char tmpbuf[32];
   stack_init(altstack);
   stack_init(ifstack);
 
-  while (p < script->top) {
+  while (p < top) {
     c++;
-    enum opcode opcode = *(enum opcode*)p;
+    enum opcode opcode;
+    script_getop(&p, top, &opcode, (u8*)tmpbuf, ARRAY_SIZE(tmpbuf), &tmplen);
     int if_exec = !stack_size(ifstack);
     p++;
     // TODO: pushdata ops
@@ -550,11 +596,19 @@ script_eval(struct stack *script, struct stack *stack) {
   return 1;
 }
 
-void script_print_ops(struct stack *stack) {
-  void **p = stack->bottom;
-  while (p < stack->top) {
-    enum opcode opcode = (enum opcode)*p++;
+void script_print(u8 *script, size_t script_size) {
+  u32 len;
+  static u8 tmpbuf[4096];
+  u8 *t = tmpbuf;
+  u8 *p = script;
+  u8 *top = script + script_size;
+  while (p < top) {
+    enum opcode opcode;
+    script_getop(&p, top, &opcode, tmpbuf, ARRAY_SIZE(tmpbuf), &len);
+    u8 *ttop = tmpbuf + len;
     printf("%s ", op_name(opcode));
+    if (t < ttop)
+      printf("%02x", *t++);
   }
   printf("\n");
 }
@@ -588,4 +642,36 @@ void script_free(struct script *script) {
 
 int script_new(struct script *script) {
   return 0;
+}
+
+void
+script_push_int(struct stack *script, s64 intval) {
+  /* u16 len; */
+  /* u16 i; */
+  /* static u8 buf[8]; */
+  struct val val = val_from_int(intval);
+  stack_push_val(script, val);
+  /* val_serialize(val, &len, buf, ARRAY_SIZE(buf)); */
+  /* for (i = 0; i < len; ++i) */
+  /*   stack_push_small(u8, script, &buf[i]); */
+}
+
+
+void
+script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
+  struct val val;
+  u8 *huh = (u8*)&val;
+  u8 *p = buf;
+  u16 valsize;
+  *len = 0;
+
+  while (stack_size(stack) != 0) {
+    val = stack_pop_val(stack);
+    printf("%02x %02x %02x %02x | ", huh[0], huh[1], huh[2], huh[3]);
+    printf("%d %d\n", val.type, val.ind);
+    val_serialize(val, &valsize, p, buflen-(p-buf));
+    p += valsize;
+    *len += valsize;
+    assert(p-buf <= buflen);
+  }
 }

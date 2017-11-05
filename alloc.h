@@ -12,7 +12,7 @@
 struct num * num_pool_new(int *ind);
 struct num * num_pool_get(const int ind);
 
-char * byte_pool_new(const char *bytes, const u16 len);
+char * byte_pool_new(const u16 len);
 char * byte_pool_get(const int ind, u16 *len);
 char * byte_pool_pop();
 

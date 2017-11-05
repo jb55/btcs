@@ -15,7 +15,7 @@
 
 
 void
-sn_from_int(int n, struct num *sn) {
+sn_from_int(s64 n, struct num *sn) {
   sn->ind = -1;
   sn->val = n;
 }
@@ -29,10 +29,40 @@ sn_from_int(int n, struct num *sn) {
 /* } */
 
 
-const char *
-sn_serialize(struct num *sn, u16 *len) {
-  assert(!"implement sn_serialize");
-  return "";
+void
+sn_serialize(struct num *sn, u8 *buf, int bufsize, u16 *len) {
+  u8 *p = buf;
+
+  if(sn->val == 0) {
+    *len = 0;
+    return;
+  }
+
+  const int neg = sn->val < 0;
+  u64 absvalue = neg ? -(sn->val) : sn->val;
+
+  while(absvalue) {
+    *p++ = absvalue & 0xff;
+    assert((p - buf) <= bufsize);
+    absvalue >>= 8;
+  }
+
+  //    - If the most significant byte is >= 0x80 and the value is positive, push a
+  //    new zero-byte to make the significant byte < 0x80 again.
+
+  //    - If the most significant byte is >= 0x80 and the value is negative, push a
+  //    new 0x80 byte that will be popped off when converting to an integral.
+
+  //    - If the most significant byte is < 0x80 and the value is negative, add
+  //    0x80 to it, since it will be subtracted and interpreted as a negative when
+  //    converting to an integral.
+
+  if (*p & 0x80)
+    *p++ = neg ? 0x80 : 0;
+  else if (neg)
+    *p++ |= 0x80;
+
+  *len = p - buf;
 }
 
 

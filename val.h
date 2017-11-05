@@ -36,6 +36,14 @@ stack_top_val(struct stack *stack, int ind) {
   return val;
 }
 
+static inline struct val
+stack_pop_val(struct stack *stack) {
+  struct val val;
+  val = stack_top_val(stack, -1);
+  stack_pop(stack);
+  return val;
+}
+
 static inline void
 stack_set_val(struct stack *stack, int ind, struct val val) {
   struct val *pval = (struct val *)(stack->top + ind);
@@ -44,5 +52,10 @@ stack_set_val(struct stack *stack, int ind, struct val val) {
 
 int
 val_eq(struct val a, struct val b, int require_minimal);
+
+void
+val_serialize(struct val val, u16 *len, u8 *buf, int bufsize);
+
+struct val val_from_int(s64);
 
 #endif /* BTCS_VAL_H */

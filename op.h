@@ -312,7 +312,7 @@ const char * val_name(struct val);
 
 static inline void
 stack_push_val(struct stack *stack, struct val val) {
-#if 0
+#if 1
   printf("pushing val ");
   val_print(val);
   printf("\n");

@@ -41,13 +41,12 @@ num_pool_new(int *ind) {
 }
 
 char *
-byte_pool_new(const char *bytes, const u16 len) {
+byte_pool_new(const u16 len) {
   assert(g_arenas.bytes_top - g_arenas.bytes + len <= g_arenas.nbytes);
   char *start = g_arenas.bytes_top;
   u16 *c = (u16*)g_arenas.bytes_top;
   *c++ = len;
   char *p = (char*)c;
-  memcpy(p, bytes, len);
   p += len;
   g_arenas.bytes_top = p;
   assert(*p == 0);

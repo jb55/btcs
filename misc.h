@@ -4,6 +4,8 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
+/* #include <endian.h> */
+#include <string.h>
 #include <stdint.h>
 
 #define DEBUG 0
@@ -21,7 +23,27 @@ typedef unsigned char  u8;
 typedef unsigned short u16;
 typedef unsigned int   u32;
 typedef int64_t        s64;
+typedef uint64_t       u64;
 
 #define STATIC_ASSERT(COND,MSG) typedef char static_assertion_##MSG[(!!(COND))*2-1]
+
+// TODO: host endianness
+#define le16toh(x) (x)
+#define le32toh(x) (x)
+
+u16 static inline
+readle16(const u8* ptr) {
+  u16 x;
+  memcpy((char*)&x, ptr, 2);
+  return le16toh(x);
+}
+
+u32 static inline
+readle32(const u8* ptr) {
+  u32 x;
+  memcpy((char*)&x, ptr, 4);
+  return le32toh(x);
+}
+
 
 #endif /* BCS_MISC_H */
