@@ -3,6 +3,7 @@
 #include "script.h"
 #include "op.h"
 #include "alloc.h"
+#include "valstack.h"
 #include "tap.c/tap.h"
 
 typedef void (program)(struct stack *script, struct stack *stack,\
@@ -95,8 +96,8 @@ TEST(big_int_serializes_ok) {
                               0x04, 0xff, 0xff, 0xff, 0x7f, OP_ADD };
   static u8 expected_out[] = { 0x05, 0xfe, 0xff, 0xff, 0xff, 0 };
 
-  script_push_int(script, 2147483647);
-  script_push_int(script, 2147483647);
+  script_push_int(script, 2147483647UL);
+  script_push_int(script, 2147483647UL);
   stack_push_op(script, OP_ADD);
 
   script_serialize(script, buf, ARRAY_SIZE(buf), &len);

@@ -310,20 +310,6 @@ enum opcode  op_tokenize(char *);
 void         val_print(struct val);
 const char * val_name(struct val);
 
-static inline void
-stack_push_val(struct stack *stack, struct val val) {
-#if 1
-  printf("pushing val ");
-  val_print(val);
-  printf("\n");
-#endif
-  stack_push_small(struct val, stack, &val);
-}
-
-static inline void
-stack_push_op(struct stack *stack, enum opcode opcode) {
-  stack_push_small(enum opcode, stack, &opcode);
-}
 
 
 #endif /* BCS_OP_H */

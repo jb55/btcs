@@ -41,9 +41,14 @@ val_serialize(struct val val, u16 *len, u8 *buf, int bufsize) {
     *buf = (u8)valsize;
     *len = valsize + 1;
     return;
+  case VT_OP:
+    *len = 1;
+    *buf = val.ind & 0xFF;
+    return;
   case VT_DATA:
     assert("!implement val_serialize VT_DATA");
     byte_pool_get(val.ind, len);
+    return;
   case VT_SMALLINT:
     *len = 1;
     n = val.ind;
@@ -66,8 +71,8 @@ val_eq(struct val a, struct val b, int require_minimal) {
   int eq = 0;
 
   static const int tmpsize = 4096;
-  static u8 tmpa[tmpsize];
-  static u8 tmpb[tmpsize];
+  static u8 tmpa[4096];
+  static u8 tmpb[4096];
 
   const u8 *abytes, *bbytes;
   // TODO: do I need to serialize to compare?

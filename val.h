@@ -4,19 +4,21 @@
 
 #include "misc.h"
 #include "stack.h"
+#include "op.h"
 
 enum valtype {
   VT_SCRIPTNUM=0,
   VT_SMALLINT,
+  VT_OP,
   VT_DATA,
   VT_N
 };
 // UPDATE VAL_TYPE_BITS if you need more valtypes
 
 
-#define VAL_TYPE_BITS 2
+#define VAL_TYPE_BITS 3
 /* static const int COMPACT_VAL_BITS = (32-VAL_TYPE_BITS-1); */
-#define VAL_COMPACT_BITS 30
+#define VAL_COMPACT_BITS 29
 
 struct val {
   u8 type : VAL_TYPE_BITS;
@@ -28,27 +30,6 @@ struct val {
 // we want val to fit into the size of a 32-bit pointer
 STATIC_ASSERT(sizeof(struct val) <= 4, val_doesnt_fit_in_stack);
 
-
-static inline struct val
-stack_top_val(struct stack *stack, int ind) {
-  struct val val;
-  stack_top_small(struct val, stack, &val, ind);
-  return val;
-}
-
-static inline struct val
-stack_pop_val(struct stack *stack) {
-  struct val val;
-  val = stack_top_val(stack, -1);
-  stack_pop(stack);
-  return val;
-}
-
-static inline void
-stack_set_val(struct stack *stack, int ind, struct val val) {
-  struct val *pval = (struct val *)(stack->top + ind);
-  *pval = val;
-}
 
 int
 val_eq(struct val a, struct val b, int require_minimal);

@@ -40,14 +40,16 @@ num_pool_new(int *ind) {
   return p;
 }
 
-char *
-byte_pool_new(const u16 len) {
+u8 *
+byte_pool_new(const u16 len, u16 *ind) {
   assert(g_arenas.bytes_top - g_arenas.bytes + len <= g_arenas.nbytes);
-  char *start = g_arenas.bytes_top;
+  u8 *start = g_arenas.bytes_top;
   u16 *c = (u16*)g_arenas.bytes_top;
   *c++ = len;
-  char *p = (char*)c;
+  u8 *p = (u8*)c;
   p += len;
+  *ind = stack_size(&g_arenas.bytes_map);
+  stack_push(&g_arenas.bytes_map, (void*)start);
   g_arenas.bytes_top = p;
   assert(*p == 0);
   return start;
@@ -55,7 +57,7 @@ byte_pool_new(const u16 len) {
 
 
 // useful for quick alloc/deallocs
-char *
+u8 *
 byte_pool_pop() {
   char *p = (char*)stack_pop(&g_arenas.bytes_map);
   u16 *c = (u16*)p;
@@ -64,15 +66,15 @@ byte_pool_pop() {
 }
 
 
-char *
+u8 *
 byte_pool_get(const int ind, u16 *len) {
   char *p;
   u16 *up;
-  p = (char*)(g_arenas.bytes_map.bottom + ind);
+  p = (u8*)(g_arenas.bytes_map.bottom + ind);
   assert(p);
   up = (u16*)p;
   *len = *(up++);
-  p = (char*)up;
+  p = (u8*)up;
   return p;
 }
 

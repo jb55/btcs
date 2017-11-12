@@ -1,5 +1,5 @@
 
-CFLAGS=-O0 -Ideps -std=c99 -g -Wall -Wno-unused-variable -Wno-unused-function
+CFLAGS=-O0 -Ideps -std=c99 -g -Wall -Wno-unused-variable -Wno-unused-function -Wunreachable-code
 
 DEPS=script.c \
      oplookup.c \

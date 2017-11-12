@@ -18,6 +18,9 @@ int main() {
   yyin = stdin;
 
   size_t size;
+  size_t bufsize = MAX_STACK_SIZE * MAX_STACK_SIZE;
+  int compiled_len;
+  u8 *buf = (u8*)malloc(bufsize);
   struct stack tmp_stack;
   alloc_arenas(0, MAX_STACK_SIZE, MAX_STACK_SIZE * MAX_STACK_SIZE);
   stack_init(&tmp_stack);
@@ -27,13 +30,14 @@ int main() {
   } while(!feof(yyin));
 
   size = g_reader_buf_top - g_reader_buf;
-  script_eval(g_reader_buf, size, &tmp_stack);
+  script_serialize(g_reader_buf, buf, bufsize, &compiled_len);
+  script_eval(buf, size, &tmp_stack);
   printf("script: ");
-  script_print_ops(g_reader_buf, g_reader_buf_top -);
+  script_print_ops(g_reader_buf, g_reader_buf_top);
   printf("stack:  ");
   script_print_vals(&tmp_stack);
 
-  stack_free(&reader_stack);
+  stack_free(&g_reader_buf);
   stack_free(&tmp_stack);
   free_arenas(0);
 

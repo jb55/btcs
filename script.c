@@ -4,6 +4,7 @@
 #include "script_num.h"
 #include "stack.h"
 #include "alloc.h"
+#include "valstack.h"
 #include <stdio.h>
 
 #define SCRIPTERR(serr) script_add_error(c, opcode, serr)
@@ -35,7 +36,7 @@ cast_to_bool(struct val val) {
   }
   case VT_DATA: {
     u16 len;
-    const char * bytes = byte_pool_get(val.ind, &len);
+    const u8 * bytes = byte_pool_get(val.ind, &len);
     return *bytes != 0;
   }
   }
@@ -43,39 +44,61 @@ cast_to_bool(struct val val) {
 }
 
 int
-script_getop(u8 **p, u8 *end, enum opcode *opcode, u8 *buf, int bufsize, u32 *outlen) {
+script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *outlen) {
+  *popcode = OP_INVALIDOPCODE;
   u32 nsize = 0;
 
-  *opcode = *(*p++);
+  int opcode;
 
-  if (*opcode > OP_PUSHDATA4)
-    return 1;
+  if (buf)
+    memset(buf, 0, bufsize);
 
-  if (*opcode < OP_PUSHDATA1)
-    nsize = *opcode;
-  else if (*opcode == OP_PUSHDATA1) {
-    if (end - *p < 1)
-      return 0;
-    nsize = *(*p++);
-  }
-  else if (*opcode == OP_PUSHDATA2) {
-    if (end - *p < 2)
-      return 0;
-    nsize = readle16(*p);
-    *p += 2;
-  }
-  else if (*opcode == OP_PUSHDATA4) {
-    if (end - *p < 4)
-      return 0;
-    nsize = readle32(*p);
-    *p += 4;
-  }
+  opcode = **p;
+  *p = *p + 1;
 
-  if (buf) {
-    *outlen = nsize;
-    memcpy(buf, *p, nsize);
+  if (opcode <= OP_PUSHDATA4) {
+    if (opcode < OP_PUSHDATA1) {
+      nsize = opcode;
+    }
+    else {
+      switch (opcode) {
+      case OP_PUSHDATA1:
+        if ((end - *p) < 1) {
+          return 0;
+        }
+        nsize = *(*p++);
+        break;
+      case OP_PUSHDATA2:
+        if ((end - *p) < 2) {
+          return 0;
+        }
+        nsize = readle16(*p);
+        *p += 2;
+        break;
+      case OP_PUSHDATA4:
+        if ((end - *p) < 4) {
+          return 0;
+        }
+        nsize = readle32(*p);
+        *p += 4;
+        break;
+      default:
+        break;
+      }
+    }
+
+    if ((end - *p) < 0 || (u32)(end - *p) < nsize) {
+      return 0;
+    }
+
+    if (buf) {
+      *outlen = nsize;
+      memcpy(buf, *p, nsize);
+    }
     *p += nsize;
   }
+
+  *popcode = opcode;
 
   return 1;
 }
@@ -110,10 +133,6 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     enum opcode opcode;
     script_getop(&p, top, &opcode, (u8*)tmpbuf, ARRAY_SIZE(tmpbuf), &tmplen);
     int if_exec = !stack_size(ifstack);
-    p++;
-    // TODO: pushdata ops
-    assert(!(opcode >= OP_PUSHDATA1 && opcode <= OP_PUSHDATA4));
-
     // Note OP_RESERVED does not count towards the opcode limit.
     if (opcode > OP_16 && ++op_count > MAX_OPS_PER_SCRIPT)
       SCRIPTERR("MAX_OPS_PER_SCRIPT");
@@ -137,7 +156,13 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
       SCRIPTERR("SCRIPT_ERR_DISABLED_OPCODE"); // Disabled opcodes.
     }
 
-
+    if (if_exec && 0 <= opcode && opcode <= OP_PUSHDATA4) {
+      /* if (fRequireMinimal && !CheckMinimalPush(vchPushValue, opcode)) { */
+      /*   return set_error(serror, SCRIPT_ERR_MINIMALDATA); */
+      /* } */
+      printf("pushing data of size %d\n", tmplen);
+      stack_push_data(stack, (u8*)tmpbuf, tmplen);
+    } else if (if_exec || (OP_IF <= opcode && opcode <= OP_ENDIF))
     switch (opcode) {
     case OP_1NEGATE:
     case OP_1:
@@ -659,19 +684,23 @@ script_push_int(struct stack *script, s64 intval) {
 
 void
 script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
-  struct val val;
-  u8 *huh = (u8*)&val;
+  struct val *valp;
+  void **sp;
   u8 *p = buf;
   u16 valsize;
   *len = 0;
+  sp = stack->bottom;
 
-  while (stack_size(stack) != 0) {
-    val = stack_pop_val(stack);
-    printf("%02x %02x %02x %02x | ", huh[0], huh[1], huh[2], huh[3]);
-    printf("%d %d\n", val.type, val.ind);
-    val_serialize(val, &valsize, p, buflen-(p-buf));
+  while (sp < stack->top) {
+    /* printf("%02x %02x %02x %02x | ", huh[0], huh[1], huh[2], huh[3]); */
+    /* printf("%d %d\n", val.type, val.ind); */
+    valp = (struct val*)sp;
+    val_print(*valp);
+    printf("\n");
+    val_serialize(*valp, &valsize, p, buflen-(p-buf));
     p += valsize;
     *len += valsize;
     assert(p-buf <= buflen);
+    sp++;
   }
 }

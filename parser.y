@@ -30,7 +30,7 @@ script:
 ;
 
 line: T_NEWLINE
-    | T_OP { stack_push_small(enum opcode, &reader_stack, &$1); }
+    | T_OP { stack_push_op(&reader_stack, &$1); }
     | T_EXAMPLE { ; }
 
 
