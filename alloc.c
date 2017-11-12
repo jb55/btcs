@@ -31,6 +31,13 @@ num_pool_get(const int ind) {
 
 
 struct num *
+num_pool_pop() {
+  assert(g_arenas.num_count > 0);
+  return &g_arenas.nums[g_arenas.num_count--];
+}
+
+
+struct num *
 num_pool_new(int *ind) {
   *ind = g_arenas.num_count++;
   struct num *p;

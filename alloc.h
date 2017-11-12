@@ -11,6 +11,7 @@
 #define ALLOC_PUSHDATA_BYTES (MAX_STACK_SIZE * MAX_OPS_PER_SCRIPT)
 
 struct num * num_pool_new(int *ind);
+struct num * num_pool_pop();
 struct num * num_pool_get(const int ind);
 
 u8 *byte_pool_new(const u16 len, u16 *ind);
