@@ -18,7 +18,7 @@ alloc_arena_sizes(struct arenas *arenas, const int nums, const int bytes) {
   if (!arenas) arenas = &g_arenas;
   arenas->nums = (struct num*)calloc(nums, sizeof(struct num));
   assert(arenas->nums);
-  arenas->bytes = (char*)calloc(bytes, 1);
+  arenas->bytes = (u8*)calloc(bytes, 1);
   stack_init_size(&arenas->bytes_map, bytes);
   arenas->bytes_top = arenas->bytes;
   arenas->nbytes = bytes;
@@ -66,7 +66,7 @@ byte_pool_new(const u16 len, u16 *ind) {
 // useful for quick alloc/deallocs
 u8 *
 byte_pool_pop() {
-  char *p = (char*)stack_pop(&g_arenas.bytes_map);
+  u8 *p = (u8*)stack_pop(&g_arenas.bytes_map);
   u16 *c = (u16*)p;
   memset(p, 0, *c + sizeof(u16));
   return p;
@@ -75,7 +75,7 @@ byte_pool_pop() {
 
 u8 *
 byte_pool_get(const int ind, u16 *len) {
-  char *p;
+  u8 *p;
   u16 *up;
   p = (u8*)(g_arenas.bytes_map.bottom + ind);
   assert(p);
