@@ -506,7 +506,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
 
         if (res != SN_SUCCESS) {
           sprintf(tmpbuf, "invalid scriptnum %d", res);
-          SCRIPTERR(tmpbuf);
+          return SCRIPTERR(tmpbuf);
         }
 
         switch (opcode)

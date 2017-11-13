@@ -80,6 +80,7 @@ val_serialize(struct val val, u16 *len, u8 *buf, int bufsize) {
     else {
       assert(!"non-small VT_SMALLINT");
     }
+    return;
   }
 
   assert(!"val_serialize missing implementation");

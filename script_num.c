@@ -3,6 +3,7 @@
 #include "alloc.h"
 #include "val.h"
 #include <limits.h>
+#include <inttypes.h>
 
 /**
  * Numeric opcodes (OP_1ADD, etc) are restricted to operating on 4-byte
@@ -119,6 +120,7 @@ enum sn_result
 sn_from_val(struct val val, struct num ** sn, int require_minimal) {
 
   switch (val.type) {
+  case VT_SMALLINT:
   case VT_SCRIPTNUM:
     *sn = num_pool_get(val.ind);
     assert((*sn)->ind == val.ind);
@@ -131,7 +133,10 @@ sn_from_val(struct val val, struct num ** sn, int require_minimal) {
       return SN_ERR_OVERFLOWED_INT;
     }
 
-    break;
+    if (val.type == VT_SMALLINT)
+      (*sn)->val = val.ind;
+
+    return SN_SUCCESS;
   case VT_DATA: {
     u8 *data;
     u16 size;
@@ -142,7 +147,8 @@ sn_from_val(struct val val, struct num ** sn, int require_minimal) {
   }
   }
 
-  assert("!sn_from_val: unhandled");
+  printf("type: %d\n", val.type);
+  assert(!"sn_from_val: unhandled");
 
   return SN_SUCCESS;
 }

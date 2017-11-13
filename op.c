@@ -5,6 +5,7 @@
 #include "alloc.h"
 #include "misc.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -360,19 +361,19 @@ val_print(struct val val) {
     assert(val.ind != -1);
     n = num_pool_get(val.ind);
     assert(n);
-    printf("%lu", n->val);
+    printf("%" PRId64, n->val);
     break;
   case VT_OP:
     printf("OP_%s", op_name(val.ind));
     break;
   case VT_SMALLINT:
-    printf("si:%d", val.ind);
+    printf("%d", val.ind);
     break;
   case VT_DATA: {
     u16 len;
     u8 *data = byte_pool_get(val.ind, &len);
-    printf("data (%d): ", len);
-    print_bytes(data, len);
+    printf("0x", len);
+    print_bytes(data, len, 0);
     break;
   }
   default:

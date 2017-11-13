@@ -23,7 +23,7 @@
 
 [oO][pP]_ {}
 
--?[0-9] {
+-?[0-9]+ {
   s64 i = strtoll(yytext, NULL, 10);
   yylval.val = val_from_int(i);
   return T_VAL;

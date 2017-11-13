@@ -29,10 +29,10 @@ cmp_data(const u8 *a, const u8 *b, int alen, int blen, const char *msg) {
       printf("%02x ", b[i] & 0xff);
 
     printf("\n#\n");
-    fail("%s: data should match", msg);
+    fail("%s", msg);
   }
   else
-    pass("%s: data should match", msg);
+    pass("%s", msg);
 }
 /* static void */
 /* test_nip(struct stack *stack, struct stack *expected) { */
@@ -129,6 +129,22 @@ TEST(big_int_serializes_ok) {
            "big int output serializes ok");
 }
 
+TEST(test_small_int) {
+  int len;
+  static u8 buf[6];
+  static u8 expected_in[] = { 0x01, 0x7f };
+
+  script_push_int(script, 127);
+  script_serialize(script, buf, ARRAY_SIZE(buf), &len);
+  cmp_data(buf, expected_in, len, ARRAY_SIZE(expected_in),
+           "small integer input serializes ok");
+
+  script_eval(buf, ARRAY_SIZE(expected_in), stack);
+  script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
+  cmp_data(buf, expected_in, len, ARRAY_SIZE(expected_in),
+           "small integer output serializes ok");
+}
+
 // TODO test scriptnum overflows
 // TODO test scriptnum negative zero boolean logic
 // TODO test scriptnum add into overflow + hash
@@ -168,7 +184,7 @@ main(int argc, char *argv[]) {
 
   alloc_arenas();
 
-  plan(8);
+  plan(10);
 
   stack_init(script);
   stack_init(stack);
@@ -180,6 +196,7 @@ main(int argc, char *argv[]) {
   RUNTEST(negative_integer);
   RUNTEST(add_negative_two);
   RUNTEST(big_int_serializes_ok);
+  RUNTEST(test_small_int);
 
   stack_free(script);
   stack_free(expected);

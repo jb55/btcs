@@ -47,12 +47,12 @@ readle32(const u8* ptr) {
 }
 
 void static inline
-print_bytes(u8 *bytes, size_t size) {
+print_bytes(u8 *bytes, size_t size, int with_space) {
   size_t i;
   for (i = 0; i < size; i++) {
-    printf("%02x ", bytes[i]);
+    printf("%02x", bytes[i]);
+    if (with_space) printf(" ");
   }
-  printf("\n");
 }
 
 
