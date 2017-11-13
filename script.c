@@ -650,7 +650,7 @@ void script_print_vals(struct stack *stack) {
   while (p < stack->top) {
     struct val val;
     memcpy(&val, &*p++, sizeof(struct val));
-    printf("s[%d] ", c++);
+    printf(" ");
     val_print(val);
   }
   putchar('\n');

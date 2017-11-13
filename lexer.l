@@ -23,6 +23,12 @@
 
 [oO][pP]_ {}
 
+-?[0-9] {
+  s64 i = strtoll(yytext, NULL, 10);
+  yylval.val = val_from_int(i);
+  return T_VAL;
+}
+
 [a-zA-Z0-9]+ {
   yylval.opcode = op_tokenize(yytext);
   return T_OP;

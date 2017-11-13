@@ -36,6 +36,17 @@ val_serialize(struct val val, u16 *len, u8 *buf, int bufsize) {
   case VT_SCRIPTNUM:
     sn = num_pool_get(val.ind);
     assert(sn);
+
+    /// TODO: if serialize_minimal
+    if (1) {
+      if (sn->val == -1) { *len = 1; *buf = OP_1NEGATE; return; }
+      if (sn->val == 0 ) { *len = 1; *buf = 0; return; }
+      if (sn->val >= 1 && sn->val <= 16 ) {
+        *len = 1;
+        *buf = OP_1 - 1 + sn->val;
+        return;
+      }
+    }
     sn_serialize(sn, buf+1, bufsize - 1, &valsize);
     assert(valsize <= 0xFF);
     *buf = (u8)valsize;
@@ -54,7 +65,7 @@ val_serialize(struct val val, u16 *len, u8 *buf, int bufsize) {
       *len = *len + 1;
     }
     else {
-      assert(!"serialize bigger pushdatas");
+      assert(!"serialize bigger pushdata");
     }
     return;
   }

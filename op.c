@@ -360,10 +360,10 @@ val_print(struct val val) {
     assert(val.ind != -1);
     n = num_pool_get(val.ind);
     assert(n);
-    printf("sn:%lu", n->val);
+    printf("%lu", n->val);
     break;
   case VT_OP:
-    printf("op:%d", val.ind);
+    printf("OP_%s", op_name(val.ind));
     break;
   case VT_SMALLINT:
     printf("si:%d", val.ind);
