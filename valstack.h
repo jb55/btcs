@@ -4,6 +4,7 @@
 
 #include "op.h"
 #include "val.h"
+#include "alloc.h"
 
 static inline struct val
 stack_top_val(struct stack *stack, int ind) {

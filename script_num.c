@@ -153,16 +153,25 @@ sn_to_val(struct num *sn) {
   struct num *snref;
   int ind;
 
-  //TODO: implement return overflowed scriptnums
-  assert(!sn_overflowed(sn));
-
-  val.type = VT_SCRIPTNUM;
-  if (sn->ind > -1)
-    val.ind = sn->ind;
-  else {
-    snref = num_pool_new(&ind);
-    snref->val = sn->val;
+  if (sn_overflowed(sn)) {
+    u16 ind, len;
+    static u8 tmp[8];
+    sn_serialize(sn, tmp, 8, &len);
+    u8 *data = byte_pool_new(len, &ind);
+    memcpy(data, tmp, len);
+    val.type = VT_DATA;
     val.ind = ind;
+  }
+  else
+  {
+    val.type = VT_SCRIPTNUM;
+    if (sn->ind > -1)
+      val.ind = sn->ind;
+    else {
+      snref = num_pool_new(&ind);
+      snref->val = sn->val;
+      val.ind = ind;
+    }
   }
   return val;
 }

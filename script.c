@@ -557,7 +557,6 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
         switch (opcode)
         {
         case OP_ADD:
-          printf("%d + %d\n", bn1->val, bn2->val);
           bn.val = bn1->val + bn2->val;
           break;
 

@@ -45,10 +45,19 @@ val_serialize(struct val val, u16 *len, u8 *buf, int bufsize) {
     *len = 1;
     *buf = val.ind & 0xFF;
     return;
-  case VT_DATA:
-    assert("!implement val_serialize VT_DATA");
-    byte_pool_get(val.ind, len);
+  case VT_DATA: {
+    u8 *p;
+    p = byte_pool_get(val.ind, len);
+    if (*len <= 0xFF) {
+      *buf++ = *len & 0xFF;
+      memcpy(buf, p, *len);
+      *len = *len + 1;
+    }
+    else {
+      assert(!"serialize bigger pushdatas");
+    }
     return;
+  }
   case VT_SMALLINT:
     *len = 1;
     n = val.ind;
