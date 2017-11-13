@@ -12,8 +12,9 @@
 ## TODOs
 
 - [X] Tokenizer
-- [ ] Evaluator
-- [ ] Compiler
+- [ ] Evaluator (partially complete)
+- [X] Compiler
+- [ ] Syntax
 - [ ] Decompiler
 
 ## Usage
@@ -22,42 +23,9 @@
 
 ```
 ./btcs <<< '1 2 16 3dup 2swap'
-script: 1 2 16 3DUP 2SWAP 
-stack:  1 2 2 16 16 1
-```
 
-  It should tokenize everything at least, even BIP examples! syntax might change ;)
-
-```
-./btcs <<EOS
-
-IF
-  <now + 3 months> CHECKLOCKTIMEVERIFY DROP
-  <Lenny's pubkey> CHECKSIGVERIFY
-  1
-ELSE
-  2
-ENDIF
-<Alice's pubkey> <Bob's pubkey> 2 CHECKMULTISIG
-
-EOS
-```
-
-  spits out
-
-```
-IF
-ex:<now + 3 months>
-CHECKLOCKTIMEVERIFY
-DROP
-ex:<Lenny's pubkey>
-CHECKSIGVERIFY
-1
-ELSE
-2
-ENDIF
-ex:<Alice's pubkey>
-ex:<Bob's pubkey>
-2
-CHECKMULTISIG
+script      1 2 16 OP_3DUP OP_2SWAP
+script_hex  5152606f72
+stack       1 2 2 16 16 1
+stack_hex   515252606051
 ```
