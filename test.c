@@ -168,7 +168,7 @@ main(int argc, char *argv[]) {
 
   alloc_arenas();
 
-  plan(5);
+  plan(8);
 
   stack_init(script);
   stack_init(stack);
