@@ -160,7 +160,6 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
       /* if (fRequireMinimal && !CheckMinimalPush(vchPushValue, opcode)) { */
       /*   return set_error(serror, SCRIPT_ERR_MINIMALDATA); */
       /* } */
-      printf("pushing data of size %d\n", tmplen);
       stack_push_data(stack, (u8*)tmpbuf, tmplen);
     } else if (if_exec || (OP_IF <= opcode && opcode <= OP_ENDIF))
     switch (opcode) {
@@ -546,14 +545,21 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
         if (stack_size(stack) < 2)
             return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
         struct num *bn1, *bn2, bn;
-        sn_from_val(stack_top_val(stack, -2), &bn1, require_minimal);
-        sn_from_val(stack_top_val(stack, -1), &bn2, require_minimal);
+        enum sn_result res;
+        bn.ind = -1;
+        res = sn_from_val(stack_top_val(stack, -2), &bn1, require_minimal);
+        if (res == SN_ERR_OVERFLOWED_INT)
+          return SCRIPTERR("SCRIPT_INT_OVERFLOW");
+        res = sn_from_val(stack_top_val(stack, -1), &bn2, require_minimal);
+        if (res == SN_ERR_OVERFLOWED_INT)
+          return SCRIPTERR("SCRIPT_INT_OVERFLOW");
         /* struct num bn(0); */
         switch (opcode)
         {
         case OP_ADD:
-            bn.val = bn1->val + bn2->val;
-            break;
+          printf("%d + %d\n", bn1->val, bn2->val);
+          bn.val = bn1->val + bn2->val;
+          break;
 
         case OP_SUB:
             bn.val = bn1->val - bn2->val;
@@ -580,7 +586,8 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
         }
         stack_pop(stack);
         stack_pop(stack);
-        stack_push_val(stack, sn_to_val(&bn));
+        struct val bnval = sn_to_val(&bn);
+        stack_push_val(stack, bnval);
 
         if (opcode == OP_NUMEQUALVERIFY)
         {
@@ -640,11 +647,12 @@ void script_print(u8 *script, size_t script_size) {
 
 void script_print_vals(struct stack *stack) {
   void **p = stack->bottom;
+  int c = 0;
   while (p < stack->top) {
     struct val val;
     memcpy(&val, &*p++, sizeof(struct val));
+    printf("s[%d] ", c++);
     val_print(val);
-    putchar(' ');
   }
   putchar('\n');
 }
@@ -695,8 +703,6 @@ script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
     /* printf("%02x %02x %02x %02x | ", huh[0], huh[1], huh[2], huh[3]); */
     /* printf("%d %d\n", val.type, val.ind); */
     valp = (struct val*)sp;
-    val_print(*valp);
-    printf("\n");
     val_serialize(*valp, &valsize, p, buflen-(p-buf));
     p += valsize;
     *len += valsize;

@@ -41,7 +41,8 @@ stack_push_data(struct stack *stack, u8 *data, int len) {
   struct val val = { .type = VT_DATA };
   u8 *p;
   u16 ind;
-  byte_pool_new(len, &ind);
+  p = byte_pool_new(len, &ind);
+  memcpy(p, data, len);
   val.ind = ind;
   stack_push_val(stack, val);
 }

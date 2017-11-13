@@ -13,7 +13,7 @@ stack_clear(struct stack *stack) {
 int
 stack_init_size(struct stack *stack, int capacity) {
   if (capacity > DEFAULT_STACK_SIZE) {
-    void *bottom = malloc(capacity * sizeof(void*));
+    void *bottom = calloc(capacity, sizeof(void*));
     if (!bottom) return 0;
     stack->bottom   = bottom;
     stack->top      = bottom;

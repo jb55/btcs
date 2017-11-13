@@ -21,6 +21,7 @@ alloc_arena_sizes(struct arenas *arenas, const int nums, const int bytes) {
   arenas->bytes = (u8*)calloc(bytes, 1);
   stack_init_size(&arenas->bytes_map, bytes);
   arenas->bytes_top = arenas->bytes;
+  arenas->num_count = 0;
   arenas->nbytes = bytes;
 }
 
@@ -44,12 +45,13 @@ num_pool_new(int *ind) {
   p = &g_arenas.nums[*ind];
   assert(p);
   assert(p->val == 0 && p->ind == 0);
+  p->ind = *ind;
   return p;
 }
 
 u8 *
-byte_pool_new(const u16 len, u16 *ind) {
-  assert(g_arenas.bytes_top - g_arenas.bytes + len <= g_arenas.nbytes);
+byte_pool_new(u16 len, u16 *ind) {
+  assert((g_arenas.bytes_top - g_arenas.bytes + len) <= g_arenas.nbytes);
   u8 *start = g_arenas.bytes_top;
   u16 *c = (u16*)g_arenas.bytes_top;
   *c++ = len;
@@ -59,7 +61,8 @@ byte_pool_new(const u16 len, u16 *ind) {
   stack_push(&g_arenas.bytes_map, (void*)start);
   g_arenas.bytes_top = p;
   assert(*p == 0);
-  return start;
+  assert(((g_arenas.bytes_top - g_arenas.bytes) + len) <= g_arenas.nbytes);
+  return p - len;
 }
 
 
@@ -74,14 +77,19 @@ byte_pool_pop() {
 
 
 u8 *
-byte_pool_get(const int ind, u16 *len) {
+byte_pool_get(int ind, u16 *len) {
+  assert(ind <= stack_size(&g_arenas.bytes_map) - 1);
+  void **vp;
   u8 *p;
   u16 *up;
-  p = (u8*)(g_arenas.bytes_map.bottom + ind);
+  vp = g_arenas.bytes_map.bottom + ind;
+  p = (u8*)(*vp);
+  assert((g_arenas.bytes_top - g_arenas.bytes + *len) <= g_arenas.nbytes);
   assert(p);
   up = (u16*)p;
-  *len = *(up++);
+  *len = *up++;
   p = (u8*)up;
+  assert((g_arenas.bytes_top - g_arenas.bytes + *len) <= g_arenas.nbytes);
   return p;
 }
 
@@ -93,3 +101,4 @@ free_arenas(struct arenas *arenas) {
   free(arenas->bytes);
   free(arenas->nums);
 }
+

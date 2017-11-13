@@ -7,6 +7,7 @@
 /* #include <endian.h> */
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define DEBUG 0
 
@@ -43,6 +44,15 @@ readle32(const u8* ptr) {
   u32 x;
   memcpy((char*)&x, ptr, 4);
   return le32toh(x);
+}
+
+void static inline
+print_bytes(u8 *bytes, size_t size) {
+  size_t i;
+  for (i = 0; i < size; i++) {
+    printf("%02x ", bytes[i]);
+  }
+  printf("\n");
 }
 
 

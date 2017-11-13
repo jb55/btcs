@@ -2,6 +2,7 @@
 #include "script_num.h"
 #include "alloc.h"
 #include "val.h"
+#include <limits.h>
 
 /**
  * Numeric opcodes (OP_1ADD, etc) are restricted to operating on 4-byte
@@ -57,27 +58,70 @@ sn_serialize(struct num *sn, u8 *buf, int bufsize, u16 *len) {
   //    0x80 to it, since it will be subtracted and interpreted as a negative when
   //    converting to an integral.
 
-  if (*p & 0x80)
+  if (*(p - 1) & 0x80)
     *p++ = neg ? 0x80 : 0;
   else if (neg)
-    *p++ |= 0x80;
+    *(p - 1) |= 0x80;
 
   *len = p - buf;
+}
+
+static inline int
+int_overflowed(s64 val) {
+  return val < INT_MIN || val > INT_MAX;
 }
 
 
 int
 sn_overflowed(struct num *num) {
-  return (num->val & ~0xFFFFFFFF) != 0;
+  return int_overflowed(num->val);
+}
+
+
+s64
+int_from_data(u8 *data, u16 size) {
+  s64 result = 0;
+
+  if (size == 0)
+    return 0;
+
+  for (size_t i = 0; i != size; ++i)
+    result |= (s64)((data[i]) << 8*i);
+
+  // If the input vector's most significant byte is 0x80, remove it from
+  // the result's msb and return a negative.
+  if (data[size-1] & 0x80) {
+    return -((s64)(result & ~(0x80ULL << (8 * (size - 1)))));
+  }
+
+  return result;
+}
+
+
+enum sn_result
+sn_from_data(u8 *data, u16 size, struct num **num) {
+  int ind;
+  s64 i;
+  i = int_from_data(data, size);
+  if (int_overflowed(i)) {
+    *num = 0;
+    return SN_ERR_OVERFLOWED_INT;
+  }
+  *num = num_pool_new(&ind);
+  (*num)->val = i;
+  (*num)->ind = ind;
+  return SN_SUCCESS;
 }
 
 
 // Return a script num only if it's still a 4-byte integer
 enum sn_result
 sn_from_val(struct val val, struct num ** sn, int require_minimal) {
+
   switch (val.type) {
   case VT_SCRIPTNUM:
     *sn = num_pool_get(val.ind);
+    assert((*sn)->ind == val.ind);
     assert(*sn);
 
     // we're trying to return a scriptnum that is larger than 4 bytes. This is not
@@ -88,9 +132,17 @@ sn_from_val(struct val val, struct num ** sn, int require_minimal) {
     }
 
     break;
-  case VT_DATA:
-    assert(!"TODO implement raw data to script num");
+  case VT_DATA: {
+    u8 *data;
+    u16 size;
+    enum sn_result res;
+    assert(val.ind != -1);
+    data = byte_pool_get(val.ind, &size);
+    return sn_from_data(data, size, sn);
   }
+  }
+
+  assert("!sn_from_val: unhandled");
 
   return SN_SUCCESS;
 }
@@ -101,7 +153,7 @@ sn_to_val(struct num *sn) {
   struct num *snref;
   int ind;
 
-  // TODO: implement return overflowed scriptnums
+  //TODO: implement return overflowed scriptnums
   assert(!sn_overflowed(sn));
 
   val.type = VT_SCRIPTNUM;
@@ -109,7 +161,7 @@ sn_to_val(struct num *sn) {
     val.ind = sn->ind;
   else {
     snref = num_pool_new(&ind);
-    *sn = *snref;
+    snref->val = sn->val;
     val.ind = ind;
   }
   return val;

@@ -368,6 +368,13 @@ val_print(struct val val) {
   case VT_SMALLINT:
     printf("si:%d", val.ind);
     break;
+  case VT_DATA: {
+    u16 len;
+    u8 *data = byte_pool_get(val.ind, &len);
+    printf("data (%d): ", len);
+    print_bytes(data, len);
+    break;
+  }
   default:
     assert(!"val_print data");
   }

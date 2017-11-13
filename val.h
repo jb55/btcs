@@ -4,7 +4,6 @@
 
 #include "misc.h"
 #include "stack.h"
-#include "op.h"
 
 enum valtype {
   VT_SCRIPTNUM=0,
