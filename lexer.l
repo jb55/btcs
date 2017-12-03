@@ -23,6 +23,11 @@
 
 [oO][pP]_ {}
 
+@[a-fA-F0-9]+ {
+  yylval.str = yytext + 1;
+  return T_DATA;
+}
+
 -?[0-9]+ {
   s64 i = strtoll(yytext, NULL, 10);
   yylval.val = val_from_int(i);

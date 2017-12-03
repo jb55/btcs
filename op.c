@@ -372,7 +372,12 @@ val_print(struct val val) {
   case VT_DATA: {
     u16 len;
     u8 *data = byte_pool_get(val.ind, &len);
-    printf("0x", len);
+
+    if (len == 0)
+      printf("0", len);
+    else
+      printf("0x", len);
+
     print_bytes(data, len, 0);
     break;
   }

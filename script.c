@@ -690,6 +690,30 @@ script_push_int(struct stack *script, s64 intval) {
 
 
 void
+script_push_datastr(struct stack *script, char *str) {
+  int count = 0;
+  u8 *bytes;
+  char *p = str;
+  u16 ind;
+  u16 nbytes = strlen(str) / 2;
+  struct val val;
+
+  bytes = byte_pool_new(nbytes, &ind);
+
+  /* WARNING: no sanitization or error-checking whatsoever */
+  for(count = 0; count < nbytes; count++) {
+    sscanf(p, "%2hhx", &bytes[count]);
+    p += 2;
+  }
+
+  val.type = VT_DATA;
+  val.ind  = ind;
+
+  stack_push_val(script, val);
+}
+
+
+void
 script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
   struct val *valp;
   void **sp;

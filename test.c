@@ -113,8 +113,8 @@ TEST(big_int_serializes_ok) {
                               0x04, 0xff, 0xff, 0xff, 0x7f, OP_ADD };
   static u8 expected_out[] = { 0x05, 0xfe, 0xff, 0xff, 0xff, 0 };
 
-  script_push_int(script, 2147483647UL);
-  script_push_int(script, 2147483647UL);
+  script_push_int(script, 2147483647LL);
+  script_push_int(script, 2147483647LL);
   stack_push_op(script, OP_ADD);
 
   script_serialize(script, buf, ARRAY_SIZE(buf), &len);
