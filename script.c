@@ -47,8 +47,6 @@ int
 script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *outlen) {
   *popcode = OP_INVALIDOPCODE;
   u32 nsize = 0;
-  // TODO: HACK: I don't know why I have to do this... 🤔
-  end++;
 
   int opcode;
 
@@ -56,7 +54,7 @@ script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *o
     memset(buf, 0, bufsize);
 
   opcode = **p;
-  (*p)++;
+  *p += 1;
 
   if (opcode <= OP_PUSHDATA4) {
     if (opcode < OP_PUSHDATA1) {
@@ -68,22 +66,22 @@ script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *o
         if ((end - *p) < 1) {
           return 0;
         }
-        nsize = *(*p++);
+        nsize = **p;
+        (*p)++;
         break;
       case OP_PUSHDATA2:
         if ((end - *p) < 2) {
           return 0;
         }
         nsize = **(u16**)p;
-        printf("nsize %d %02x %02x\n", nsize, **p, *(*p + 1));
-        *p = *p + 2;
+        *p += 2;
         break;
       case OP_PUSHDATA4:
         if ((end - *p) < 4) {
           return 0;
         }
         nsize = **(u32**)p;
-        *p = *p + 4;
+        *p += 4;
         break;
       default:
         break;
@@ -91,13 +89,11 @@ script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *o
     }
 
     if ((end - *p) < 0 || (end - *p) < nsize) {
-      printf("early exit %d %d\n", (u32)(end - *p), nsize);
       return 0;
     }
 
     if (buf) {
       *outlen = nsize;
-      printf("memcpy outlen %d %02x %02x\n", nsize, **p, *(*p + 1));
       memcpy(buf, *p, nsize);
     }
     *p += nsize;
