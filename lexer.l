@@ -24,6 +24,10 @@
 [oO][pP]_ {}
 
 @[a-fA-F0-9]+ {
+  if (strlen(yytext + 1) % 2 != 0) {
+    yylval.str = "Invalid data string, byte string must have even length";
+    return T_ERR;
+  }
   yylval.str = yytext + 1;
   return T_DATA;
 }

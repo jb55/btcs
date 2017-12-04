@@ -35,7 +35,7 @@ cast_to_bool(struct val val) {
     return sn->val != 0;
   }
   case VT_DATA: {
-    u16 len;
+    u32 len;
     const u8 * bytes = byte_pool_get(val.ind, &len);
     return *bytes != 0;
   }
@@ -47,6 +47,8 @@ int
 script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *outlen) {
   *popcode = OP_INVALIDOPCODE;
   u32 nsize = 0;
+  // TODO: HACK: I don't know why I have to do this... 🤔
+  end++;
 
   int opcode;
 
@@ -54,7 +56,7 @@ script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *o
     memset(buf, 0, bufsize);
 
   opcode = **p;
-  *p = *p + 1;
+  (*p)++;
 
   if (opcode <= OP_PUSHDATA4) {
     if (opcode < OP_PUSHDATA1) {
@@ -72,27 +74,30 @@ script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *o
         if ((end - *p) < 2) {
           return 0;
         }
-        nsize = readle16(*p);
-        *p += 2;
+        nsize = **(u16**)p;
+        printf("nsize %d %02x %02x\n", nsize, **p, *(*p + 1));
+        *p = *p + 2;
         break;
       case OP_PUSHDATA4:
         if ((end - *p) < 4) {
           return 0;
         }
-        nsize = readle32(*p);
-        *p += 4;
+        nsize = **(u32**)p;
+        *p = *p + 4;
         break;
       default:
         break;
       }
     }
 
-    if ((end - *p) < 0 || (u32)(end - *p) < nsize) {
+    if ((end - *p) < 0 || (end - *p) < nsize) {
+      printf("early exit %d %d\n", (u32)(end - *p), nsize);
       return 0;
     }
 
     if (buf) {
       *outlen = nsize;
+      printf("memcpy outlen %d %02x %02x\n", nsize, **p, *(*p + 1));
       memcpy(buf, *p, nsize);
     }
     *p += nsize;
@@ -156,7 +161,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
       SCRIPTERR("SCRIPT_ERR_DISABLED_OPCODE"); // Disabled opcodes.
     }
 
-    if (if_exec && 0 <= opcode && opcode <= OP_PUSHDATA4) {
+    if (if_exec && opcode <= OP_PUSHDATA4) {
       /* if (fRequireMinimal && !CheckMinimalPush(vchPushValue, opcode)) { */
       /*   return set_error(serror, SCRIPT_ERR_MINIMALDATA); */
       /* } */
@@ -718,7 +723,7 @@ script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
   struct val *valp;
   void **sp;
   u8 *p = buf;
-  u16 valsize;
+  u32 valsize;
   *len = 0;
   sp = stack->bottom;
 

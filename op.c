@@ -370,13 +370,13 @@ val_print(struct val val) {
     printf("%d", val.ind);
     break;
   case VT_DATA: {
-    u16 len;
+    u32 len;
     u8 *data = byte_pool_get(val.ind, &len);
 
     if (len == 0)
       printf("0", len);
     else
-      printf("0x", len);
+      printf("@", len);
 
     print_bytes(data, len, 0);
     break;

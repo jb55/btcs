@@ -64,3 +64,8 @@ void yyerror(const char* s) {
   exit(1);
 }
 
+void
+parse_error(char* err) {
+  fprintf(stderr, "[btcs] parse error: %s\n", err);
+  exit(1);
+}

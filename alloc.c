@@ -50,10 +50,10 @@ num_pool_new(int *ind) {
 }
 
 u8 *
-byte_pool_new(u16 len, u16 *ind) {
+byte_pool_new(u32 len, u16 *ind) {
   assert((g_arenas.bytes_top - g_arenas.bytes + len) <= g_arenas.nbytes);
   u8 *start = g_arenas.bytes_top;
-  u16 *c = (u16*)g_arenas.bytes_top;
+  u32 *c = (u32*)g_arenas.bytes_top;
   *c++ = len;
   u8 *p = (u8*)c;
   p += len;
@@ -70,23 +70,23 @@ byte_pool_new(u16 len, u16 *ind) {
 u8 *
 byte_pool_pop() {
   u8 *p = (u8*)stack_pop(&g_arenas.bytes_map);
-  u16 *c = (u16*)p;
-  memset(p, 0, *c + sizeof(u16));
+  u32 *c = (u32*)p;
+  memset(p, 0, *c + sizeof(u32));
   return p;
 }
 
 
 u8 *
-byte_pool_get(int ind, u16 *len) {
+byte_pool_get(int ind, u32 *len) {
   assert(ind <= stack_size(&g_arenas.bytes_map) - 1);
   void **vp;
   u8 *p;
-  u16 *up;
+  u32 *up;
   vp = g_arenas.bytes_map.bottom + ind;
   p = (u8*)(*vp);
   assert((g_arenas.bytes_top - g_arenas.bytes + *len) <= g_arenas.nbytes);
   assert(p);
-  up = (u16*)p;
+  up = (u32*)p;
   *len = *up++;
   p = (u8*)up;
   assert((g_arenas.bytes_top - g_arenas.bytes + *len) <= g_arenas.nbytes);

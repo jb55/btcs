@@ -139,7 +139,7 @@ sn_from_val(struct val val, struct num ** sn, int require_minimal) {
     return SN_SUCCESS;
   case VT_DATA: {
     u8 *data;
-    u16 size;
+    u32 size;
     enum sn_result res;
     assert(val.ind != -1);
     data = byte_pool_get(val.ind, &size);
@@ -178,6 +178,7 @@ sn_to_val(struct num *sn) {
       snref->val = sn->val;
       val.ind = ind;
     }
+
   }
   return val;
 }

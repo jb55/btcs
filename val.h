@@ -34,7 +34,7 @@ int
 val_eq(struct val a, struct val b, int require_minimal);
 
 void
-val_serialize(struct val val, u16 *len, u8 *buf, int bufsize);
+val_serialize(struct val val, u32 *len, u8 *buf, int bufsize);
 
 struct val val_from_int(s64);
 

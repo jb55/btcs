@@ -14,8 +14,8 @@ struct num * num_pool_new(int *ind);
 struct num * num_pool_pop();
 struct num * num_pool_get(const int ind);
 
-u8 *byte_pool_new(u16 len, u16 *ind);
-u8 *byte_pool_get(int ind, u16 *len);
+u8 *byte_pool_new(u32 len, u16 *ind);
+u8 *byte_pool_get(int ind, u32 *len);
 u8 *byte_pool_pop();
 
 struct arenas {

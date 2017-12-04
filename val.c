@@ -28,7 +28,7 @@ val_from_int(s64 intval) {
 }
 
 void
-val_serialize(struct val val, u16 *len, u8 *buf, int bufsize) {
+val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
   struct num *sn;
   int n;
   u16 valsize;
@@ -59,13 +59,34 @@ val_serialize(struct val val, u16 *len, u8 *buf, int bufsize) {
   case VT_DATA: {
     u8 *p;
     p = byte_pool_get(val.ind, len);
-    if (*len <= 0xFF) {
-      *buf++ = *len & 0xFF;
+    if (*len < OP_PUSHDATA1) {
+      *buf++ = *len;
       memcpy(buf, p, *len);
-      *len = *len + 1;
+      *len += 1;
+    }
+    else if (*len <= 0xFF) {
+      *buf++ = OP_PUSHDATA1;
+      *buf++ = *len;
+      memcpy(buf, p, *len);
+      *len += 2;
+    }
+    else if (*len <= 0xFFFF) {
+      *buf++ = OP_PUSHDATA2;
+      u16 *sp = (u16*)buf;
+      // TODO: writele16
+      *sp = *len;
+      buf += 2;
+      memcpy(buf, p, *len);
+      *len += 3;
     }
     else {
-      assert(!"serialize bigger pushdata");
+      *buf++ = OP_PUSHDATA4;
+      u32 *ip = (u32*)buf;
+      // TODO: writele32
+      *ip = *len;
+      buf += 4;
+      memcpy(buf, p, *len);
+      *len += 5;
     }
     return;
   }
@@ -88,7 +109,7 @@ val_serialize(struct val val, u16 *len, u8 *buf, int bufsize) {
 
 int
 val_eq(struct val a, struct val b, int require_minimal) {
-  u16 alen, blen;
+  u32 alen, blen;
   int eq = 0;
 
   static const int tmpsize = 4096;
