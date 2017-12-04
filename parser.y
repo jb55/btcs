@@ -43,12 +43,12 @@ script:
 ;
 
 line: T_NEWLINE
-    | T_INT { script_push_int(&g_reader_stack, $1); }
-    | T_VAL { stack_push_val(&g_reader_stack, $1); }
-    | T_OP { stack_push_op(&g_reader_stack, $1); }
-    | T_DATA { script_push_datastr(&g_reader_stack, $1); }
-    | T_STR { script_push_str(&g_reader_stack, $1); }
-    | T_ERR { parse_error($1); }
+    | T_INT     { script_push_int(&g_reader_stack, $1); }
+    | T_VAL     { stack_push_val(&g_reader_stack, $1); }
+    | T_OP      { stack_push_op(&g_reader_stack, $1); }
+    | T_DATA    { script_push_datastr(&g_reader_stack, $1); }
+    | T_STR     { script_push_str(&g_reader_stack, $1); }
+    | T_ERR     { parse_error($1); }
     | T_EXAMPLE { ; }
 
 
