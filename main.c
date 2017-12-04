@@ -43,11 +43,11 @@ int main() {
     printf("%02x", buf[i]);
   printf("\n");
 
-  printf("stack      ");
+  printf("output     ");
   script_print_vals(&tmp_stack);
   script_serialize(&tmp_stack, buf, bufsize, &compiled_len);
 
-  printf("stack_hex   ");
+  printf("output_hex  ");
   for(i = 0; i < compiled_len; ++i)
     printf("%02x", buf[i]);
   printf("\n");
