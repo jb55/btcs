@@ -23,6 +23,13 @@
 
 [oO][pP]_ {}
 
+\".*\" {
+  char *t = yytext + 1;
+  t[strlen(t) - 1] = '\0';
+  yylval.str = t;
+  return T_STR;
+}
+
 @[a-fA-F0-9]+ {
   if (strlen(yytext + 1) % 2 != 0) {
     yylval.str = "Invalid data string, byte string must have even length";

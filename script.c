@@ -225,6 +225,12 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     break;
 
 
+    case OP_RETURN:
+    {
+      return SCRIPTERR("OP_RETURN");
+    }
+    break;
+
     case OP_INVALIDOPCODE:
     {
       return SCRIPTERR("SCRIPT_ERR_INVALID_OPCODE");
@@ -689,6 +695,20 @@ script_push_int(struct stack *script, s64 intval) {
   /*   stack_push_small(u8, script, &buf[i]); */
 }
 
+
+void
+script_push_str(struct stack *script, char *str) {
+  struct val val;
+  u16 ind;
+  u8 *bytes;
+  bytes = byte_pool_new(strlen(str), &ind);
+  strcpy((char*)bytes, str);
+
+  val.type = VT_DATA;
+  val.ind  = ind;
+
+  stack_push_val(script, val);
+}
 
 void
 script_push_datastr(struct stack *script, char *str) {
