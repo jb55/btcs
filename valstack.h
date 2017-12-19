@@ -54,4 +54,18 @@ stack_push_op(struct stack *stack, enum opcode opcode) {
   stack_push_val(stack, val);
 }
 
+static inline int
+stack_any_val(struct stack *stack, struct val val) {
+  void **p = stack->bottom;
+  struct val *cval;
+
+  while (p < stack->top) {
+    cval = (struct val*)p;
+    if (val.type == cval->type && val.ind == cval->ind)
+      return 1;
+  }
+
+  return 0;
+}
+
 #endif /* BTCS_VALSTACK_H */

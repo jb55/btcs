@@ -30,6 +30,8 @@ int
 cast_to_bool(struct val val) {
   // TODO: implement cast_to_bool
   switch (val.type) {
+  case VT_SMALLINT:
+    return val.ind != 0;
   case VT_SCRIPTNUM: {
     struct num *sn = num_pool_get(val.ind);
     return sn->val != 0;
@@ -112,6 +114,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
   u8 *p = script;
   u8 *top = script + script_size;
   static char tmpbuf[32];
+  enum opcode opcode;
   static const struct val val_true  = {.type = VT_SMALLINT, .ind  = 1};
   static const struct val val_false = {.type = VT_SMALLINT, .ind  = 0};
   static const struct num bn_one  = {.val = 1, .ind = -1};
@@ -131,9 +134,9 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
 
   while (p < top) {
     c++;
-    enum opcode opcode;
     script_getop(&p, top, &opcode, (u8*)tmpbuf, ARRAY_SIZE(tmpbuf), &tmplen);
-    int if_exec = !stack_size(ifstack);
+    int if_exec = !stack_any_val(ifstack, falseval);
+
     // Note OP_RESERVED does not count towards the opcode limit.
     if (opcode > OP_16 && ++op_count > MAX_OPS_PER_SCRIPT)
       SCRIPTERR("MAX_OPS_PER_SCRIPT");
@@ -209,6 +212,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
             if (stack_size(stack) < 1)
               return SCRIPTERR("SCRIPT_ERR_UNBALANCED_CONDITIONAL");
             struct val val = stack_top_val(stack, -1);
+            // TODO: minimal if?
             /* if (sigversion == SIGVERSION_WITNESS_V0 && (flags & SCRIPT_VERIFY_MINIMALIF)) { */
             /*     if (vch.size() > 1) */
             /*         return SCRIPTERR(SCRIPT_ERR_MINIMALIF); */
@@ -220,10 +224,28 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
                 ifval = !ifval;
             stack_pop(stack);
         }
-        stack_push_small(int, ifstack, &ifval);
+        stack_push_val(ifstack, smallintval(ifval));
     }
     break;
 
+    case OP_ELSE:
+    {
+      if (stack_size(ifstack) == 0)
+        return SCRIPTERR("SCRIPT_ERR_UNBALANCED_CONDITIONAL");
+      struct val v = stack_pop_val(ifstack);
+      assert(v.type == VT_SMALLINT);
+      v.ind = !v.ind;
+      stack_push_val(ifstack, v);
+    }
+    break;
+
+    case OP_ENDIF:
+    {
+      if (stack_size(ifstack) == 0)
+        return SCRIPTERR("SCRIPT_ERR_UNBALANCED_CONDITIONAL");
+      stack_pop(ifstack);
+    }
+    break;
 
     case OP_RETURN:
     {
@@ -628,6 +650,9 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
 
     }
   }
+
+  if (stack_size(ifstack) != 0)
+    return SCRIPTERR("SCRIPT_ERR_UNBALANCED_CONDITIONAL");
 
   stack_free(altstack);
   stack_free(ifstack);

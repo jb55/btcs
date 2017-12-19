@@ -25,6 +25,8 @@ struct val {
 };
 
 #define smallintval(n) ((struct val){ .type = VT_SMALLINT, .ind = n })
+#define falseval smallintval(0)
+#define trueval  smallintval(1)
 
 // we want val to fit into the size of a 32-bit pointer
 STATIC_ASSERT(sizeof(struct val) <= 4, val_doesnt_fit_in_stack);
