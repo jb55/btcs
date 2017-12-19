@@ -23,7 +23,7 @@
 
 [oO][pP]_ {}
 
-\".*\" {
+\"[^\"]*\" {
   char *t = yytext + 1;
   t[strlen(t) - 1] = '\0';
   yylval.str = t;
