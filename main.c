@@ -15,6 +15,13 @@ u32 g_reader_buf_cap;
 
 void yyerror(const char* s);
 
+
+void
+parse_error(char* err) {
+  fprintf(stderr, "[btcs] parse error: %s\n", err);
+  exit(1);
+}
+
 int main() {
   yyin = stdin;
 
@@ -68,11 +75,5 @@ int main() {
 
 void yyerror(const char* s) {
   fprintf(stderr, "Parse error: %s\n", s);
-  exit(1);
-}
-
-void
-parse_error(char* err) {
-  fprintf(stderr, "[btcs] parse error: %s\n", err);
   exit(1);
 }

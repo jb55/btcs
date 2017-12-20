@@ -16,7 +16,9 @@ int   script_eval(const u8 *script, size_t script_size, struct stack *stack,
 void  script_print_ops(char * buf, size_t size);
 void  script_print_vals(struct stack *);
 void  script_push_int(struct stack *, s64);
-void  script_push_datastr(struct stack *, char *str);
+
+void  script_push_str(struct stack *script, char *str);
+void  script_push_datastr(struct stack *, const char *str);
 
 void
 script_serialize(struct stack *stack, u8 *buf, int buflen, int* len);

@@ -2,6 +2,7 @@
 %{
 #include <stdio.h>
 #include "op.h"
+#include "script.h"
 #include "stack.h"
 #include "valstack.h"
 

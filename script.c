@@ -761,10 +761,10 @@ script_push_str(struct stack *script, char *str) {
 }
 
 void
-script_push_datastr(struct stack *script, char *str) {
+script_push_datastr(struct stack *script, const char *str) {
   int count = 0;
   u8 *bytes;
-  char *p = str;
+  const char *p = str;
   u16 ind;
   u16 nbytes = strlen(str) / 2;
   struct val val;
