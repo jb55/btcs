@@ -65,7 +65,7 @@ $(BIN): $(OBJS) $(CLIOBJS)
 run_tests: $(OBJS) $(TESTOBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(TESTOBJS)
 
-test: run_tests
+test: run_tests $(BIN)
 	@./run_tests
 
 clean:
