@@ -18,7 +18,8 @@ void yyerror(const char* s);
 int main() {
   yyin = stdin;
 
-  size_t size;
+  struct result result;
+  /* size_t size; */
   size_t bufsize = MAX_STACK_SIZE * MAX_STACK_SIZE;
   int i;
   int compiled_len;
@@ -32,11 +33,11 @@ int main() {
     yyparse();
   } while(!feof(yyin));
 
-  size = g_reader_buf_top - g_reader_buf;
+  /* size = g_reader_buf_top - g_reader_buf; */
   printf("script     ");
   script_print_vals(&g_reader_stack);
   script_serialize(&g_reader_stack, buf, bufsize, &compiled_len);
-  script_eval(buf, compiled_len, &tmp_stack);
+  script_eval(buf, compiled_len, &tmp_stack, &result);
 
   printf("script_hex  ");
   for(i = 0; i < compiled_len; ++i)
@@ -52,11 +53,17 @@ int main() {
     printf("%02x", buf[i]);
   printf("\n");
 
+  printf("results    ");
+  if (result.error) printf(" error:%d:%s:%s", result.op_count, result.error,
+                           op_name(result.last_op));
+  else printf(" success");
+  printf("\n");
+
   stack_free(&g_reader_stack);
   stack_free(&tmp_stack);
   free_arenas(0);
 
-  return 0;
+  return !!result.error;
 }
 
 void yyerror(const char* s) {

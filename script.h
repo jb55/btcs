@@ -3,15 +3,16 @@
 #define BTCS_SCRIPT_H
 
 #include "stack.h"
+#include "op.h"
 
-struct script {
-  struct stack data;
-  struct stack pushdata; // a stack of pushdata stacks
+struct result {
+  char * error;
+  enum opcode last_op;
+  int op_count;
 };
 
-int   script_new(struct script *);
-void  script_free(struct script *);
-int   script_eval(u8 *script, size_t script_size, struct stack *stack);
+int   script_eval(const u8 *script, size_t script_size, struct stack *stack,
+                  struct result *result);
 void  script_print_ops(char * buf, size_t size);
 void  script_print_vals(struct stack *);
 void  script_push_int(struct stack *, s64);

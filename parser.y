@@ -49,7 +49,7 @@ line: T_NEWLINE
     | T_DATA    { script_push_datastr(&g_reader_stack, $1); }
     | T_STR     { script_push_str(&g_reader_stack, $1); }
     | T_ERR     { parse_error($1); }
-    | T_EXAMPLE { ; }
+    | T_EXAMPLE { script_handle_input(&g_reader_stack, $1); }
 
 
 %%

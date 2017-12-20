@@ -7,12 +7,13 @@
 #include "tap.c/tap.h"
 
 typedef void (program)(struct stack *script, struct stack *stack,\
-                       struct stack *expected);
+                       struct result *result, struct stack *expected);
 
-#define RUNTEST(test) run_test(script, stack, expected, test)
+#define RUNTEST(test) run_test(script, stack, expected, result, test)
 #define TEST(test) static inline void test(struct stack *script, \
                                            struct stack *stack, \
-                                           struct stack *expected \
+                                           struct result *result,   \
+                                           struct stack *expected  \
                                           )
 
 
@@ -65,7 +66,10 @@ ok_stacks_equal(struct stack *s1, struct stack *s2, const char *context) {
 TEST(test_simple) {
   u8 in_script[] = { OP_1 };
 
-  script_eval(in_script, 1, stack);
+  script_eval(in_script, 1, stack, result);
+  ok(!result->error, "test_simple: no errors");
+  ok(result->op_count == 1, "test_simple: op count is 1");
+  ok(result->last_op == OP_1, "test_simple: last op is OP_1");
 
   stack_push_val(expected, smallintval(1));
   ok_stacks_equal(stack, expected, "test_simple");
@@ -74,7 +78,9 @@ TEST(test_simple) {
 TEST(test_nip) {
   u8 in_script[] = { OP_1, OP_2, OP_NIP };
 
-  script_eval(in_script, ARRAY_SIZE(in_script), stack);
+  script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
+  ok(!result->error, "test_nip: no errors returned");
+  ok(result->op_count == 3, "test_nip: op_count is 3");
 
   stack_push_val(expected, smallintval(2));
   ok_stacks_equal(stack, expected, "test_nip");
@@ -83,7 +89,7 @@ TEST(test_nip) {
 TEST(test_2dup_not_enough_input) {
   u8 in_script[] = { OP_1, OP_2DUP };
 
-  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack);
+  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
   ok(res == 0, "2dup fail on small stack");
 }
 
@@ -91,7 +97,7 @@ TEST(negative_integer) {
   static u8 buf[6];
   int len;
   u8 in_script[] = { 0x01, 0x82 };
-  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack);
+  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
   script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
   cmp_data(buf, in_script, len, ARRAY_SIZE(in_script), "negative 2 serializes ok");
 }
@@ -101,7 +107,7 @@ TEST(add_negative_two) {
   int len;
   static u8 in_script[] = { 0x01, 0x82, 0x01, 0x82, OP_ADD };
   static u8 expected_out[] = { 0x01, 0x84 };
-  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack);
+  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
   script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
   cmp_data(buf, expected_out, len, ARRAY_SIZE(expected_out), "add negative two twice");
 }
@@ -122,7 +128,7 @@ TEST(big_int_serializes_ok) {
   cmp_data(buf, expected_in, len, ARRAY_SIZE(expected_in),
            "big int input serializes ok");
 
-  script_eval(buf, ARRAY_SIZE(expected_in), stack);
+  script_eval(buf, ARRAY_SIZE(expected_in), stack, result);
   script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
 
   cmp_data(buf, expected_out, len, ARRAY_SIZE(expected_out),
@@ -139,7 +145,7 @@ TEST(test_small_int) {
   cmp_data(buf, expected_in, len, ARRAY_SIZE(expected_in),
            "small integer input serializes ok");
 
-  script_eval(buf, ARRAY_SIZE(expected_in), stack);
+  script_eval(buf, ARRAY_SIZE(expected_in), stack, result);
   script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
   cmp_data(buf, expected_in, len, ARRAY_SIZE(expected_in),
            "small integer output serializes ok");
@@ -163,28 +169,28 @@ TEST(test_small_int) {
 
 
 static inline void
-run_test(struct stack *script, struct stack *stack, struct stack *expected, program *prog)
+run_test(struct stack *script, struct stack *stack, struct stack *expected,
+         struct result *result, program *prog)
 {
   stack_clear(script);
   stack_clear(stack);
   stack_clear(expected);
-  prog(script, stack, expected);
+  prog(script, stack, result, expected);
 }
 
 
 int
 main(int argc, char *argv[]) {
   struct stack _stack, _expected, _script;
+  struct result _result;
   struct stack *script   = &_script;
   struct stack *stack    = &_stack;
   struct stack *expected = &_expected;
-
-  g_silence_script_err = 0;
-  g_silence_script_warn = 1;
+  struct result *result  = &_result;
 
   alloc_arenas();
 
-  plan(10);
+  plan(15);
 
   stack_init(script);
   stack_init(stack);

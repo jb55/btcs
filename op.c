@@ -374,9 +374,9 @@ val_print(struct val val) {
     u8 *data = byte_pool_get(val.ind, &len);
 
     if (len == 0)
-      printf("0", len);
+      printf("0");
     else
-      printf("@", len);
+      printf("@");
 
     print_bytes(data, len, 0);
     break;

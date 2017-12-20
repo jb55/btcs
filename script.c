@@ -7,7 +7,8 @@
 #include "valstack.h"
 #include <stdio.h>
 
-#define SCRIPTERR(serr) script_add_error(c, opcode, serr)
+/* #define SCRIPTERR(serr) script_add_error(c, opcode, serr) */
+#define SCRIPTERR(serr) { err = serr; goto evalerror; }
 
 int g_silence_script_err = 0;
 int g_silence_script_warn = 0;
@@ -46,7 +47,7 @@ cast_to_bool(struct val val) {
 }
 
 int
-script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *outlen) {
+script_getop(const u8 **p, const u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *outlen) {
   *popcode = OP_INVALIDOPCODE;
   u32 nsize = 0;
 
@@ -108,11 +109,13 @@ script_getop(u8 **p, u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *o
 
 
 int
-script_eval(u8 *script, size_t script_size, struct stack *stack) {
+script_eval(const u8 *script, size_t script_size, struct stack *stack,
+            struct result *result) {
   int op_count = 0;
   u32 tmplen;
-  u8 *p = script;
-  u8 *top = script + script_size;
+  char *err = NULL;
+  const u8 *p = script;
+  const u8 *top = script + script_size;
   static char tmpbuf[32];
   enum opcode opcode;
   static const struct val val_true  = {.type = VT_SMALLINT, .ind  = 1};
@@ -157,12 +160,12 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
         opcode == OP_LSHIFT ||
         opcode == OP_RSHIFT) {
 
-      SCRIPTERR("SCRIPT_ERR_DISABLED_OPCODE"); // Disabled opcodes.
+      SCRIPTERR("DISABLED_OPCODE"); // Disabled opcodes.
     }
 
     if (if_exec && opcode <= OP_PUSHDATA4) {
       /* if (fRequireMinimal && !CheckMinimalPush(vchPushValue, opcode)) { */
-      /*   return set_error(serror, SCRIPT_ERR_MINIMALDATA); */
+      /*   return set_error(serror, MINIMALDATA); */
       /* } */
       stack_push_data(stack, (u8*)tmpbuf, tmplen);
     } else if (if_exec || (OP_IF <= opcode && opcode <= OP_ENDIF))
@@ -198,7 +201,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     case OP_NOP6: case OP_NOP7: case OP_NOP8: case OP_NOP9: case OP_NOP10:
       {
         /* if (script->flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS) */
-        script_add_warning("SCRIPT_ERR_DISCOURAGE_UPGRADABLE_NOPS");
+        script_add_warning("DISCOURAGE_UPGRADABLE_NOPS");
       }
       break;
 
@@ -210,14 +213,14 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
         if (if_exec)
         {
             if (stack_size(stack) < 1)
-              return SCRIPTERR("SCRIPT_ERR_UNBALANCED_CONDITIONAL");
+              SCRIPTERR("UNBALANCED_CONDITIONAL");
             struct val val = stack_top_val(stack, -1);
             // TODO: minimal if?
             /* if (sigversion == SIGVERSION_WITNESS_V0 && (flags & SCRIPT_VERIFY_MINIMALIF)) { */
             /*     if (vch.size() > 1) */
-            /*         return SCRIPTERR(SCRIPT_ERR_MINIMALIF); */
+            /*         SCRIPTERR(MINIMALIF); */
             /*     if (vch.size() == 1 && vch[0] != 1) */
-            /*         return SCRIPTERR(SCRIPT_ERR_MINIMALIF); */
+            /*         SCRIPTERR(MINIMALIF); */
             /* } */
             ifval = cast_to_bool(val);
             if (opcode == OP_NOTIF)
@@ -231,7 +234,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     case OP_ELSE:
     {
       if (stack_size(ifstack) == 0)
-        return SCRIPTERR("SCRIPT_ERR_UNBALANCED_CONDITIONAL");
+        SCRIPTERR("UNBALANCED_CONDITIONAL");
       struct val v = stack_pop_val(ifstack);
       assert(v.type == VT_SMALLINT);
       v.ind = !v.ind;
@@ -242,27 +245,27 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     case OP_ENDIF:
     {
       if (stack_size(ifstack) == 0)
-        return SCRIPTERR("SCRIPT_ERR_UNBALANCED_CONDITIONAL");
+        SCRIPTERR("UNBALANCED_CONDITIONAL");
       stack_pop(ifstack);
     }
     break;
 
     case OP_RETURN:
     {
-      return SCRIPTERR("OP_RETURN");
+      SCRIPTERR("OP_RETURN");
     }
     break;
 
     case OP_INVALIDOPCODE:
     {
-      return SCRIPTERR("SCRIPT_ERR_INVALID_OPCODE");
+      SCRIPTERR("INVALID_OPCODE");
     }
     break;
 
     case OP_FROMALTSTACK:
     {
         if (stack_size(altstack) < 1)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_ALTSTACK_OPERATION");
+          SCRIPTERR("INVALID_ALTSTACK_OPERATION");
         stack_push(stack, stack_top(altstack, -1));
         stack_pop(altstack);
     }
@@ -272,7 +275,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 -- )
         if (stack_size(stack) < 2)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         stack_pop(stack);
         stack_pop(stack);
     }
@@ -282,7 +285,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 -- x1 x2 x1 x2)
         if (stack_size(stack) < 2)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         struct val v1 = stack_top_val(stack, -2);
         struct val v2 = stack_top_val(stack, -1);
         stack_push_val(stack, v1);
@@ -294,7 +297,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 x3 -- x1 x2 x3 x1 x2 x3)
         if (stack_size(stack) < 3)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         struct val v1 = stack_top_val(stack, -3);
         struct val v2 = stack_top_val(stack, -2);
         struct val v3 = stack_top_val(stack, -1);
@@ -308,7 +311,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2)
         if (stack_size(stack) < 4)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         struct val v1 = stack_top_val(stack, -4);
         struct val v2 = stack_top_val(stack, -3);
         stack_push_val(stack, v1);
@@ -320,7 +323,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 x3 x4 x5 x6 -- x3 x4 x5 x6 x1 x2)
         if (stack_size(stack) < 6)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         struct val t6 = stack_top_val(stack, -6);
         struct val t5 = stack_top_val(stack, -5);
         *(stack->top - 6) = *(stack->top - 4);
@@ -336,7 +339,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 x3 x4 -- x3 x4 x1 x2)
         if (stack_size(stack) < 4)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
 
         struct val t4 = stack_top_val(stack, -4);
         struct val t3 = stack_top_val(stack, -3);
@@ -352,7 +355,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x - 0 | x x)
         if (stack_size(stack) < 1)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         struct val val = stack_top_val(stack, -1);
         if (cast_to_bool(val))
             stack_push_val(stack, val);
@@ -373,7 +376,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
       // (x -- )
       if (stack_size(stack) < 1)
-        return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        SCRIPTERR("INVALID_STACK_OPERATION");
       stack_pop(stack);
     }
     break;
@@ -382,7 +385,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x -- x x)
         if (stack_size(stack) < 1)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         struct val val = stack_top_val(stack, (-1));
         stack_push_val(stack, val);
     }
@@ -392,7 +395,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 -- x2)
         if (stack_size(stack) < 2)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         // TODO: sanity check - stack_size() == stack_end(stack)
         stack_set_val(stack, -2, stack_top_val(stack, -1));
         stack_pop(stack);
@@ -403,7 +406,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 -- x1 x2 x1)
         if (stack_size(stack) < 2)
-          return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+          SCRIPTERR("INVALID_STACK_OPERATION");
         struct val val = stack_top_val(stack, (-2));
         stack_push_val(stack, val);
     }
@@ -416,7 +419,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
         // (xn ... x2 x1 x0 n - xn ... x2 x1 x0 xn)
         // (xn ... x2 x1 x0 n - ... x2 x1 x0 xn)
         if (stack_size(stack) < 2)
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         struct num *n;
 
         enum sn_result res =
@@ -429,7 +432,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
 
         stack_pop(stack);
         if (n->val < 0 || n->val >= (int)stack_size(stack))
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         struct val val = stack_top_val(stack, (-(n->val))-1);
         if (opcode == OP_ROLL)
           assert(!"Finish OP_ROLL");
@@ -444,7 +447,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
         //  x2 x1 x3  after first swap
         //  x2 x3 x1  after second swap
         if (stack_size(stack) < 3)
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         stack_swap(stack, -3, -2);
         stack_swap(stack, -2, -1);
     }
@@ -454,7 +457,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
       // (x1 x2 -- x2 x1)
       if (stack_size(stack) < 2)
-        return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+        SCRIPTERR("INVALID_STACK_OPERATION");
       stack_swap(stack, -2, -1);
     }
     break;
@@ -463,7 +466,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 -- x2 x1 x2)
         if (stack_size(stack) < 2)
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         struct val val = stack_top_val(stack, -1);
         stack_swap(stack, -2, -1);
         stack_push(stack, stack_top(stack, -2));
@@ -475,7 +478,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (in -- in size)
         if (stack_size(stack) < 1)
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         struct num sn;
         sn_from_int(stack_size(stack) - 1, &sn);
         struct val val = sn_to_val(&sn);
@@ -493,7 +496,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 - bool)
         if (stack_size(stack) < 2)
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         struct val v1 = stack_top_val(stack, -2);
         struct val v2 = stack_top_val(stack, -1);
         int equal = val_eq(v1, v2, require_minimal);
@@ -510,7 +513,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
             if (equal)
                 stack_pop(stack);
             else
-                return SCRIPTERR("SCRIPT_ERR_EQUALVERIFY");
+                SCRIPTERR("EQUALVERIFY");
         }
     }
     break;
@@ -528,14 +531,14 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (in -- out)
         if (stack_size(stack) < 1)
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         struct num *bn;
         enum sn_result res =
           sn_from_val(stack_top_val(stack, -1), &bn, require_minimal);
 
         if (res != SN_SUCCESS) {
           sprintf(tmpbuf, "invalid scriptnum %d", res);
-          return SCRIPTERR(tmpbuf);
+          SCRIPTERR(tmpbuf);
         }
 
         switch (opcode)
@@ -572,16 +575,16 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x1 x2 -- out)
         if (stack_size(stack) < 2)
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         struct num *bn1, *bn2, bn;
         enum sn_result res;
         bn.ind = -1;
         res = sn_from_val(stack_top_val(stack, -2), &bn1, require_minimal);
         if (res == SN_ERR_OVERFLOWED_INT)
-          return SCRIPTERR("SCRIPT_INT_OVERFLOW");
+          SCRIPTERR("SCRIPT_INT_OVERFLOW");
         res = sn_from_val(stack_top_val(stack, -1), &bn2, require_minimal);
         if (res == SN_ERR_OVERFLOWED_INT)
-          return SCRIPTERR("SCRIPT_INT_OVERFLOW");
+          SCRIPTERR("SCRIPT_INT_OVERFLOW");
         /* struct num bn(0); */
         switch (opcode)
         {
@@ -622,7 +625,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
             if (cast_to_bool(stack_top_val(stack, -1)))
                 stack_pop(stack);
             else
-                return SCRIPTERR("SCRIPT_ERR_NUMEQUALVERIFY");
+                SCRIPTERR("NUMEQUALVERIFY");
         }
     }
     break;
@@ -631,7 +634,7 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     {
         // (x min max -- out)
         if (stack_size(stack) < 3)
-            return SCRIPTERR("SCRIPT_ERR_INVALID_STACK_OPERATION");
+            SCRIPTERR("INVALID_STACK_OPERATION");
         struct num *bn1, *bn2, *bn3;
         sn_from_val(stack_top_val(stack, -3), &bn1, require_minimal);
         sn_from_val(stack_top_val(stack, -2), &bn2, require_minimal);
@@ -644,27 +647,68 @@ script_eval(u8 *script, size_t script_size, struct stack *stack) {
     }
     break;
 
+    case OP_RIPEMD160:
+    case OP_SHA1:
+    case OP_SHA256:
+    case OP_HASH160:
+    case OP_HASH256:
+    {
+      SCRIPTERR("unhandled hash opcode");
+      // (in -- hash)
+      /* if (stack_size(stack) < 1) */
+      /*   SCRIPTERR("script_err_invalid_stack_operation"); */
+
+      /* u16 hashind; */
+      /* u32 hashlen = */
+      /*   (opcode == OP_RIPEMD160 || opcode == OP_SHA1 || opcode == OP_HASH160) */
+      /*   ? 20 : 32; */
+
+      /* struct val val = stack_top_val(stack, -1); */
+      /* struct val hash = byte_pool_new(hashlen, &hashind); */
+
+      /* if (opcode == OP_RIPEMD160) */
+      /*   ripemd160() */
+      /*   cripemd160().write(vch.data(), vch.size()).finalize(vchhash.data()); */
+      /* else if (opcode == op_sha1) */
+      /*   csha1().write(vch.data(), vch.size()).finalize(vchhash.data()); */
+      /* else if (opcode == op_sha256) */
+      /*   csha256().write(vch.data(), vch.size()).finalize(vchhash.data()); */
+      /* else if (opcode == op_hash160) */
+      /*   chash160().write(vch.data(), vch.size()).finalize(vchhash.data()); */
+      /* else if (opcode == op_hash256) */
+      /*   chash256().write(vch.data(), vch.size()).finalize(vchhash.data()); */
+      /* popstack(stack); */
+      /* stack.push_back(vchhash); */
+    }
+    break;
+
     default: {
-      return SCRIPTERR("unhandled opcode");
+      SCRIPTERR("UNHANDLED_OPCODE");
     }
 
     }
   }
 
   if (stack_size(ifstack) != 0)
-    return SCRIPTERR("SCRIPT_ERR_UNBALANCED_CONDITIONAL");
+    SCRIPTERR("UNBALANCED_CONDITIONAL");
+
+
+evalerror:
+  result->error = err;
+  result->op_count = c;
+  result->last_op = opcode;
 
   stack_free(altstack);
   stack_free(ifstack);
-  return 1;
+  return !err;
 }
 
 void script_print(u8 *script, size_t script_size) {
   u32 len;
   static u8 tmpbuf[4096];
   u8 *t = tmpbuf;
-  u8 *p = script;
-  u8 *top = script + script_size;
+  const u8 *p = script;
+  const u8 *top = script + script_size;
   while (p < top) {
     enum opcode opcode;
     script_getop(&p, top, &opcode, tmpbuf, ARRAY_SIZE(tmpbuf), &len);
@@ -688,25 +732,6 @@ void script_print_vals(struct stack *stack) {
   putchar('\n');
 }
 
-
-int script_init(struct script *script) {
-  stack_init(&script->pushdata);
-  return stack_init(&script->data);
-}
-
-void script_free(struct script *script) {
-  stack_free(&script->data);
-  void **p = script->pushdata.bottom;
-  assert(p);
-  while (p < script->pushdata.top) {
-    assert(*p);
-    p++;
-  }
-}
-
-int script_new(struct script *script) {
-  return 0;
-}
 
 void
 script_push_int(struct stack *script, s64 intval) {
@@ -778,4 +803,8 @@ script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
     assert(p-buf <= buflen);
     sp++;
   }
+}
+
+void
+script_handle_input(struct stack *stack, const char *str) {
 }
