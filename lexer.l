@@ -20,6 +20,7 @@
 
 \[[^\]]+\] { yylval.str = yytext; return T_EXAMPLE; }
 
+#[^\n]* { return T_COMMENT; }
 
 [oO][pP]_ {}
 

@@ -24,6 +24,7 @@ void yyerror(const char* s);
 %token T_VAL
 %token T_DATA
 %token T_STR
+%token T_COMMENT
 %token T_ERR
 %token T_NEWLINE T_QUIT T_EXAMPLE
 
@@ -44,6 +45,7 @@ script:
 ;
 
 line: T_NEWLINE
+    | T_COMMENT
     | T_INT     { script_push_int(&g_reader_stack, $1); }
     | T_VAL     { stack_push_val(&g_reader_stack, $1); }
     | T_OP      { stack_push_op(&g_reader_stack, $1); }
