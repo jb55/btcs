@@ -63,6 +63,7 @@ stack_any_val(struct stack *stack, struct val val) {
     cval = (struct val*)p;
     if (val.type == cval->type && val.ind == cval->ind)
       return 1;
+    p++;
   }
 
   return 0;
