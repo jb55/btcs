@@ -6,7 +6,8 @@
   bitcoin script parser/evaluator/compiler/decompiler
   
   **WARNING**: This has not been rigorously tested, do not depend on script
-  outputs when determining actual payees
+  outputs when determining actual payees. Make sure to test on testnet first if
+  you do.
 
 ## Motivation
 
