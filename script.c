@@ -358,7 +358,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
           SCRIPTERR("INVALID_STACK_OPERATION");
         struct val val = stack_top_val(stack, -1);
         if (cast_to_bool(val))
-            stack_push_val(stack, val);
+            stack_push_val(stack, val_copy(val));
     }
     break;
 
