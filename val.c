@@ -18,7 +18,7 @@ struct val
 val_from_int(s64 intval) {
   struct val val;
   struct num *sn;
-  int ind;
+  u16 ind;
   sn = num_pool_new(&ind);
   val.type = VT_SCRIPTNUM;
   val.ind = ind;
@@ -133,6 +133,31 @@ val_eq(struct val a, struct val b, int require_minimal) {
   return eq;
 }
 
+struct val
+val_copy(struct val a) {
+  u32 len;
+  u16 newind;
+  u8 *src, *dst;
+  struct num *nsrc, *ndst;
+
+  switch (a.type) {
+  case VT_SMALLINT:
+    return a;
+  case VT_DATA:
+    src = byte_pool_get(a.ind, &len);
+    dst = byte_pool_new(len, &newind);
+    memcpy(dst, src, len);
+    a.ind = newind;
+    return a;
+  case VT_SCRIPTNUM:
+    nsrc = num_pool_get(a.ind);
+    ndst = num_pool_new(&newind);
+    ndst->val = nsrc->val;
+    return sn_to_val(ndst);
+  default:
+    assert(!"unhandle val_copy enum");
+  }
+}
 
 /* struct val */
 /* val_int(s64 n) { */

@@ -26,7 +26,7 @@ alloc_arena_sizes(struct arenas *arenas, const int nums, const int bytes) {
 }
 
 struct num *
-num_pool_get(const int ind) {
+num_pool_get(const u16 ind) {
   return &g_arenas.nums[ind];
 }
 
@@ -39,7 +39,7 @@ num_pool_pop() {
 
 
 struct num *
-num_pool_new(int *ind) {
+num_pool_new(u16 *ind) {
   *ind = g_arenas.num_count++;
   struct num *p;
   p = &g_arenas.nums[*ind];

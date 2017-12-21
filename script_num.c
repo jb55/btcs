@@ -101,7 +101,7 @@ int_from_data(u8 *data, u16 size) {
 
 enum sn_result
 sn_from_data(u8 *data, u16 size, struct num **num) {
-  int ind;
+  u16 ind;
   s64 i;
   i = int_from_data(data, size);
   if (int_overflowed(i)) {
@@ -157,7 +157,7 @@ struct val
 sn_to_val(struct num *sn) {
   struct val val;
   struct num *snref;
-  int ind;
+  u16 ind;
 
   if (sn_overflowed(sn)) {
     u16 ind, len;

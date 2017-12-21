@@ -288,8 +288,8 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
           SCRIPTERR("INVALID_STACK_OPERATION");
         struct val v1 = stack_top_val(stack, -2);
         struct val v2 = stack_top_val(stack, -1);
-        stack_push_val(stack, v1);
-        stack_push_val(stack, v2);
+        stack_push_val(stack, val_copy(v1));
+        stack_push_val(stack, val_copy(v2));
     }
     break;
 
@@ -301,9 +301,9 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         struct val v1 = stack_top_val(stack, -3);
         struct val v2 = stack_top_val(stack, -2);
         struct val v3 = stack_top_val(stack, -1);
-        stack_push_val(stack, v1);
-        stack_push_val(stack, v2);
-        stack_push_val(stack, v3);
+        stack_push_val(stack, val_copy(v1));
+        stack_push_val(stack, val_copy(v2));
+        stack_push_val(stack, val_copy(v3));
     }
     break;
 
@@ -387,7 +387,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         if (stack_size(stack) < 1)
           SCRIPTERR("INVALID_STACK_OPERATION");
         struct val val = stack_top_val(stack, (-1));
-        stack_push_val(stack, val);
+        stack_push_val(stack, val_copy(val));
     }
     break;
 
@@ -532,7 +532,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         // (in -- out)
         if (stack_size(stack) < 1)
             SCRIPTERR("INVALID_STACK_OPERATION");
-        struct num *bn;
+        struct num *bn; 
         enum sn_result res =
           sn_from_val(stack_top_val(stack, -1), &bn, require_minimal);
 
