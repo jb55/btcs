@@ -479,9 +479,9 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         // (in -- in size)
         if (stack_size(stack) < 1)
             SCRIPTERR("INVALID_STACK_OPERATION");
-        struct num sn;
-        sn_from_int(stack_size(stack) - 1, &sn);
-        struct val val = sn_to_val(&sn);
+        struct val val = stack_top_val(stack, -1);
+        u32 size = val_size(val);
+        val = val_from_int(size);
         stack_push_val(stack, val);
     }
     break;

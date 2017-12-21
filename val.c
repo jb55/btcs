@@ -159,6 +159,20 @@ val_copy(struct val a) {
   }
 }
 
+u32
+val_size(struct val val) {
+  u8 *data;
+  u32 len;
+
+  switch (val.type) {
+  case VT_DATA:
+    data = byte_pool_get(val.ind, &len);
+    return len;
+  default:
+    return 1;
+  }
+}
+
 /* struct val */
 /* val_int(s64 n) { */
 /*   struct val val; */

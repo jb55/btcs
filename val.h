@@ -32,6 +32,7 @@ struct val {
 STATIC_ASSERT(sizeof(struct val) <= 4, val_doesnt_fit_in_stack);
 
 struct val val_copy(struct val a);
+u32 val_size(struct val val);
 
 int
 val_eq(struct val a, struct val b, int require_minimal);
