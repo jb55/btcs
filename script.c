@@ -118,8 +118,8 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
   const u8 *top = script + script_size;
   static char tmpbuf[32];
   enum opcode opcode;
-  static const struct val val_true  = {.type = VT_SMALLINT, .ind  = 1};
-  static const struct val val_false = {.type = VT_SMALLINT, .ind  = 0};
+  struct val val_true = val_from_int(1);
+  struct val val_false = val_from_int(0);
   static const struct num bn_one  = {.val = 1, .ind = -1};
   static const struct num bn_zero = {.val = 0, .ind = -1};
   struct val val;
