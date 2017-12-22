@@ -22,7 +22,7 @@ parse_error(char* err) {
   exit(1);
 }
 
-int main() {
+int main(int argc, const char *argv[]) {
   yyin = stdin;
 
   struct result result;
@@ -36,9 +36,17 @@ int main() {
   stack_init(&tmp_stack);
   stack_init(&g_reader_stack);
 
-  do {
-    yyparse();
-  } while(!feof(yyin));
+  if (argc > 1) {
+    for (int i = 1; i < argc; ++i) {
+      yy_scan_string(argv[i]);
+      yyparse();
+    }
+  }
+  else {
+    do {
+      yyparse();
+    } while(!feof(yyin));
+  }
 
   /* size = g_reader_buf_top - g_reader_buf; */
   printf("script     ");
