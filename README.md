@@ -26,7 +26,7 @@
   Work in progress. Some OPs are working:
 
 ```
-./btcs <<< '1 2 16 3dup 2swap'
+$ btcs 1 2 16 3dup 2swap
 
 script      1 2 16 OP_3DUP OP_2SWAP
 script_hex  5152606f72
