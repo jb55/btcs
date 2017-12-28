@@ -216,6 +216,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
               SCRIPTERR("UNBALANCED_CONDITIONAL");
             struct val val = stack_top_val(stack, -1);
             // TODO: minimal if?
+            // https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2016-August/013014.html
             /* if (sigversion == SIGVERSION_WITNESS_V0 && (flags & SCRIPT_VERIFY_MINIMALIF)) { */
             /*     if (vch.size() > 1) */
             /*         SCRIPTERR(MINIMALIF); */
