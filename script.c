@@ -436,7 +436,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
             SCRIPTERR("INVALID_STACK_OPERATION");
         struct val val = stack_top_val(stack, (-(n->val))-1);
         if (opcode == OP_ROLL)
-          assert(!"Finish OP_ROLL");
+          stack_erase(stack, -(n->val) - 1);
             /* stack.erase(stack.end()-n-1); */
         stack_push_val(stack, val);
     }

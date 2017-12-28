@@ -25,7 +25,7 @@ int   stack_init_size(struct stack *, int size);
 void  stack_free(struct stack *);
 void  stack_clear(struct stack *);
 void* stack_pop(struct stack *);
-void* stack_erase(struct stack *, int ind);
+void  stack_erase(struct stack *, int ind);
 void  stack_push(struct stack *, void *val);
 
 static inline void *

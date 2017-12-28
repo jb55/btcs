@@ -82,6 +82,14 @@ stack_push(struct stack *stack, void *val) {
   *stack->top++ = val;
 }
 
+void
+stack_erase(struct stack *stack, int pos) {
+  if (stack_size(stack) == 0) return;
+  size_t len = stack->top - (stack->top + pos);
+  memcpy(stack->top + pos, stack->top + pos + 1, sizeof(stack->top) * len);
+  stack->top--;
+}
+
 void *
 stack_pop(struct stack *stack) {
   assert(stack);
