@@ -15,12 +15,5 @@
     of the better sighash scheme in bip143. there are so many interesting
     sighash types, and there are probably going to be more eventually, that
     implementing legacy just seems like a waste of time now
-
-* Evaluator
-
-Some things to consider
-
-- [ ] May need context for things like CSV
-- [ ] Should we represent context as the program environment?
-- [ ] Pure environment and perhaps live testnet environment?
-- [ ] How to do this?
+    
+* Remaining OPCODES
