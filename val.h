@@ -9,6 +9,7 @@ enum valtype {
   VT_SCRIPTNUM=0,
   VT_SMALLINT,
   VT_OP,
+  VT_RAW,
   VT_DATA,
   VT_N
 };

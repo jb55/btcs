@@ -381,6 +381,13 @@ val_print(struct val val) {
     print_bytes(data, len, 0);
     break;
   }
+  case VT_RAW: {
+    u32 len;
+    u8 *data = byte_pool_get(val.ind, &len);
+    printf("0x");
+    print_bytes(data, len, 0);
+    break;
+  }
   default:
     assert(!"val_print data");
   }

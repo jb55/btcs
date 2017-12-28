@@ -31,12 +31,23 @@
   return T_STR;
 }
 
+0x[a-fA-F0-9]+ {
+  char * t = yytext + 2;
+  if (strlen(t) % 2 != 0) {
+     yylval.str = "Invalid raw string, it must have even length";
+     return T_ERR;
+  }
+  yylval.str = t;
+  return T_RAW;
+}
+
 @[a-fA-F0-9]+ {
-  if (strlen(yytext + 1) % 2 != 0) {
-    yylval.str = "Invalid data string, byte string must have even length";
+  char *t = yytext + 1;
+  if (strlen(t) % 2 != 0) {
+    yylval.str = "Invalid data string, it must have even length";
     return T_ERR;
   }
-  yylval.str = yytext + 1;
+  yylval.str = t;
   return T_DATA;
 }
 

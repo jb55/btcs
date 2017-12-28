@@ -437,7 +437,6 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         struct val val = stack_top_val(stack, (-(n->val))-1);
         if (opcode == OP_ROLL)
           stack_erase(stack, -(n->val) - 1);
-            /* stack.erase(stack.end()-n-1); */
         stack_push_val(stack, val);
     }
     break;
@@ -733,7 +732,6 @@ void script_print_vals(struct stack *stack) {
   putchar('\n');
 }
 
-
 void
 script_push_int(struct stack *script, s64 intval) {
   /* u16 len; */
@@ -748,7 +746,7 @@ script_push_int(struct stack *script, s64 intval) {
 
 
 void
-script_push_str(struct stack *script, char *str) {
+script_push_str(struct stack *script, const char *str) {
   struct val val;
   u16 ind;
   u8 *bytes;
@@ -762,7 +760,7 @@ script_push_str(struct stack *script, char *str) {
 }
 
 void
-script_push_datastr(struct stack *script, const char *str) {
+script_push_datastr(struct stack *script, const char *str, int raw) {
   int count = 0;
   u8 *bytes;
   const char *p = str;
@@ -778,10 +776,16 @@ script_push_datastr(struct stack *script, const char *str) {
     p += 2;
   }
 
-  val.type = VT_DATA;
+  val.type = raw ? VT_RAW : VT_DATA;
   val.ind  = ind;
 
   stack_push_val(script, val);
+}
+
+
+void
+script_push_raw(struct stack *stack, const char *data) {
+  script_push_datastr(stack, data, 1);
 }
 
 

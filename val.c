@@ -56,6 +56,12 @@ val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
     *len = 1;
     *buf = val.ind & 0xFF;
     return;
+  case VT_RAW: {
+    u8 *p;
+    p = byte_pool_get(val.ind, len);
+    memcpy(buf, p, *len);
+    return;
+  }
   case VT_DATA: {
     u8 *p;
     p = byte_pool_get(val.ind, len);

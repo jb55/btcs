@@ -23,6 +23,7 @@ void yyerror(const char* s);
 %token T_INT
 %token T_VAL
 %token T_DATA
+%token T_RAW
 %token T_STR
 %token T_COMMENT
 %token T_ERR
@@ -31,6 +32,7 @@ void yyerror(const char* s);
 %type<opcode> T_OP
 %type<integer> T_INT
 %type<str> T_DATA
+%type<str> T_RAW
 %type<str> T_STR
 %type<val> T_VAL
 %type<str> T_EXAMPLE
@@ -46,10 +48,11 @@ script:
 
 line: T_NEWLINE
     | T_COMMENT
+    | T_RAW     { script_push_raw(&g_reader_stack, $1); }
     | T_INT     { script_push_int(&g_reader_stack, $1); }
     | T_VAL     { stack_push_val(&g_reader_stack, $1); }
     | T_OP      { stack_push_op(&g_reader_stack, $1); }
-    | T_DATA    { script_push_datastr(&g_reader_stack, $1); }
+    | T_DATA    { script_push_datastr(&g_reader_stack, $1, 0); }
     | T_STR     { script_push_str(&g_reader_stack, $1); }
     | T_ERR     { parse_error($1); }
     | T_EXAMPLE { script_handle_input(&g_reader_stack, $1); }
