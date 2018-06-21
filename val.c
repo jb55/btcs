@@ -115,14 +115,13 @@ val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
 
 int
 val_eq(struct val a, struct val b, int require_minimal) {
-  u32 alen, blen;
+  u32 alen = 0, blen = 0;
   int eq = 0;
 
   static const int tmpsize = 4096;
   static u8 tmpa[4096];
   static u8 tmpb[4096];
 
-  const u8 *abytes, *bbytes;
   // TODO: do I need to serialize to compare?
   /* abytes = val_serialize(a, &alen, require_minimal); */
   /* bbytes = val_serialize(b, &blen, require_minimal); */
