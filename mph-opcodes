@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Easy Perfect Minimal Hashing
 # By Steve Hanov. Released to the public domain.
 #
@@ -40,7 +40,7 @@ def CreateMinimalPerfectHash( dict ):
 
     # Step 2: Sort the buckets and process the ones with the most items first.
     buckets.sort( key=len, reverse=True )
-    for b in xrange( size ):
+    for b in range( size ):
         bucket = buckets[b]
         if len(bucket) <= 1: break
 
@@ -68,10 +68,10 @@ def CreateMinimalPerfectHash( dict ):
     # placing them into a free slot. Use a negative value of d to indicate
     # this.
     freelist = []
-    for i in xrange(size):
+    for i in range(size):
         if values[i] == None: freelist.append( i )
 
-    for b in xrange( b, size ):
+    for b in range( b, size ):
         bucket = buckets[b]
         if len(bucket) == 0: break
         slot = freelist.pop()

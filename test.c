@@ -19,8 +19,8 @@ typedef void (program)(struct stack *script, struct stack *stack,\
 
 static void
 cmp_data(const u8 *a, const u8 *b, int alen, int blen, const char *msg) {
-  int i = 0;
   if (memcmp(a, b, blen) != 0) {
+    int i = 0;
     printf("#\n# Failed data cmp test\n# > ");
     for (i = 0; i < alen; ++i)
       printf("%02x ", a[i] & 0xff);
@@ -97,7 +97,7 @@ TEST(negative_integer) {
   static u8 buf[6];
   int len;
   u8 in_script[] = { 0x01, 0x82 };
-  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
+  script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
   script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
   cmp_data(buf, in_script, len, ARRAY_SIZE(in_script), "negative 2 serializes ok");
 }
@@ -107,7 +107,7 @@ TEST(add_negative_two) {
   int len;
   static u8 in_script[] = { 0x01, 0x82, 0x01, 0x82, OP_ADD };
   static u8 expected_out[] = { 0x01, 0x84 };
-  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
+  script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
   script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
   cmp_data(buf, expected_out, len, ARRAY_SIZE(expected_out), "add negative two twice");
 }
