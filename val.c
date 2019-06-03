@@ -27,8 +27,15 @@ val_from_int(s64 intval) {
   return val;
 }
 
-void
-val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
+// TODO maybe replace this with serialize
+void val_bytes(struct val val, u32 *len, u8 *buf, int bufsize) {
+  if (val.type == VT_DATA)
+    val.type = VT_RAW;
+  static const int serialize_minimal = 0;
+  val_serialize(val, len, buf, bufsize, serialize_minimal);
+}
+
+void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize, int serialize_minimal) {
   struct num *sn;
   int n;
   u16 valsize;
@@ -37,8 +44,7 @@ val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
     sn = num_pool_get(val.ind);
     assert(sn);
 
-    /// TODO: if serialize_minimal
-    if (1) {
+    if (serialize_minimal) {
       if (sn->val == -1) { *len = 1; *buf = OP_1NEGATE; return; }
       if (sn->val == 0 ) { *len = 1; *buf = 0; return; }
       if (sn->val >= 1 && sn->val <= 16 ) {
@@ -47,10 +53,9 @@ val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
         return;
       }
     }
-    sn_serialize(sn, buf+1, bufsize - 1, &valsize);
+    sn_serialize(sn, buf, bufsize, &valsize);
     assert(valsize <= 0xFF);
-    *buf = (u8)valsize;
-    *len = valsize + 1;
+    *len = valsize;
     return;
   case VT_OP:
     *len = 1;
@@ -125,8 +130,8 @@ val_eq(struct val a, struct val b, int require_minimal) {
   // TODO: do I need to serialize to compare?
   /* abytes = val_serialize(a, &alen, require_minimal); */
   /* bbytes = val_serialize(b, &blen, require_minimal); */
-  val_serialize(a, &alen, tmpa, tmpsize);
-  val_serialize(b, &blen, tmpb, tmpsize);
+  val_serialize(a, &alen, tmpa, tmpsize, 0);
+  val_serialize(b, &blen, tmpb, tmpsize, 0);
   // TODO: what if they're semantically equivalent? or does that matter
   // (eg. minimal vs not miniminal)?
 
@@ -170,7 +175,7 @@ val_size(struct val val) {
 
   switch (val.type) {
   case VT_DATA: {
-    u8 *data = byte_pool_get(val.ind, &len);
+    byte_pool_get(val.ind, &len);
     return len;
   }
   default:

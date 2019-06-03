@@ -7,6 +7,9 @@ DEPS=script.c \
      val.c \
      alloc.c \
      script_num.c \
+     sha256.c \
+     ripemd160.c \
+     compiler.c \
      stack.c
 
 CLIDEPS=parser.tab.c \
@@ -65,7 +68,7 @@ $(BIN): $(OBJS) $(CLIOBJS)
 run_tests: $(OBJS) $(TESTOBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(TESTOBJS)
 
-test: run_tests $(BIN)
+check: run_tests $(BIN)
 	@./run_tests
 
 clean:

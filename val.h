@@ -38,8 +38,8 @@ u32 val_size(struct val val);
 int
 val_eq(struct val a, struct val b, int require_minimal);
 
-void
-val_serialize(struct val val, u32 *len, u8 *buf, int bufsize);
+void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize, int serialize_minimal);
+void val_bytes(struct val val, u32 *len, u8 *buf, int bufsize);
 
 struct val val_from_int(s64);
 

@@ -84,7 +84,7 @@ byte_pool_get(int ind, u32 *len) {
   u32 *up;
   vp = g_arenas.bytes_map.bottom + ind;
   p = (u8*)(*vp);
-  assert((g_arenas.bytes_top - g_arenas.bytes + *len) <= g_arenas.nbytes);
+  //assert((g_arenas.bytes_top - g_arenas.bytes + *len) <= g_arenas.nbytes);
   assert(p);
   up = (u32*)p;
   *len = *up++;

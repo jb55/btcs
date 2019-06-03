@@ -5,6 +5,8 @@
 #include "stack.h"
 #include "alloc.h"
 #include "valstack.h"
+#include "sha256.h"
+#include "ripemd160.h"
 #include <stdio.h>
 
 /* #define SCRIPTERR(serr) script_add_error(c, opcode, serr) */
@@ -117,6 +119,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
   const u8 *p = script;
   const u8 *top = script + script_size;
   static char tmpbuf[32];
+  static u8 tmpbytes[MAX_SCRIPT_ELEMENT_SIZE];
   enum opcode opcode;
   struct val val_true = val_from_int(1);
   struct val val_false = val_from_int(0);
@@ -653,32 +656,42 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
     case OP_HASH160:
     case OP_HASH256:
     {
-      SCRIPTERR("unhandled hash opcode");
       // (in -- hash)
-      /* if (stack_size(stack) < 1) */
-      /*   SCRIPTERR("script_err_invalid_stack_operation"); */
+      if (stack_size(stack) < 1)
+        SCRIPTERR("script_err_invalid_stack_operation");
 
-      /* u16 hashind; */
-      /* u32 hashlen = */
-      /*   (opcode == OP_RIPEMD160 || opcode == OP_SHA1 || opcode == OP_HASH160) */
-      /*   ? 20 : 32; */
+      u16 hashind;
+      u32 valsize;
+      u32 hashlen =
+        (opcode == OP_RIPEMD160 || opcode == OP_SHA1 ||
+         opcode == OP_HASH160) ? 20 : 32;
 
-      /* struct val val = stack_top_val(stack, -1); */
-      /* struct val hash = byte_pool_new(hashlen, &hashind); */
+      struct val v = stack_top_val(stack, -1);
 
-      /* if (opcode == OP_RIPEMD160) */
-      /*   ripemd160() */
+      val_bytes(v, &valsize, tmpbytes, sizeof(tmpbytes));
+      u8 *hash = byte_pool_new(hashlen, &hashind);
+
+      if (opcode == OP_RIPEMD160) {
+        ripemd160((struct ripemd160*)hash, tmpbytes, valsize);
+      }
+      else if (opcode == OP_SHA256) {
+        sha256((struct sha256*)hash, tmpbytes, valsize);
+      }
+      else
+        SCRIPTERR("unhandled hash opcode");
       /*   cripemd160().write(vch.data(), vch.size()).finalize(vchhash.data()); */
       /* else if (opcode == op_sha1) */
       /*   csha1().write(vch.data(), vch.size()).finalize(vchhash.data()); */
       /* else if (opcode == op_sha256) */
       /*   csha256().write(vch.data(), vch.size()).finalize(vchhash.data()); */
-      /* else if (opcode == op_hash160) */
-      /*   chash160().write(vch.data(), vch.size()).finalize(vchhash.data()); */
       /* else if (opcode == op_hash256) */
       /*   chash256().write(vch.data(), vch.size()).finalize(vchhash.data()); */
-      /* popstack(stack); */
-      /* stack.push_back(vchhash); */
+
+      v.ind = hashind;
+      v.type = VT_RAW;
+
+      stack_pop(stack);
+      stack_push_val(stack, v);
     }
     break;
 
@@ -788,9 +801,9 @@ script_push_raw(struct stack *stack, const char *data) {
   script_push_datastr(stack, data, 1);
 }
 
-
-void
-script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
+void script_serialize_(struct stack *stack, u8 *buf, int buflen,
+                      int* len, int serialize_minimal)
+{
   struct val *valp;
   void **sp;
   u8 *p = buf;
@@ -802,7 +815,8 @@ script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
     /* printf("%02x %02x %02x %02x | ", huh[0], huh[1], huh[2], huh[3]); */
     /* printf("%d %d\n", val.type, val.ind); */
     valp = (struct val*)sp;
-    val_serialize(*valp, &valsize, p, buflen-(p-buf));
+    val_serialize(*valp, &valsize, p, buflen-(p-buf),
+                  serialize_minimal);
     p += valsize;
     *len += valsize;
     assert(p-buf <= buflen);
@@ -812,4 +826,14 @@ script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
 
 void
 script_handle_input(struct stack *stack, const char *str) {
+}
+
+void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len)
+{
+  script_serialize_(stack, buf, buflen, len, 0);
+}
+
+void script_serialize_minimal(struct stack *stack, u8 *buf, int buflen, int* len)
+{
+  script_serialize_(stack, buf, buflen, len, 1);
 }

@@ -51,7 +51,7 @@ int main(int argc, const char *argv[]) {
   /* size = g_reader_buf_top - g_reader_buf; */
   printf("script     ");
   script_print_vals(&g_reader_stack);
-  script_serialize(&g_reader_stack, buf, bufsize, &compiled_len);
+  script_serialize_minimal(&g_reader_stack, buf, bufsize, &compiled_len);
   script_eval(buf, compiled_len, &tmp_stack, &result);
 
   printf("script_hex  ");
