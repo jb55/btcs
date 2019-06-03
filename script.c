@@ -812,5 +812,4 @@ script_serialize(struct stack *stack, u8 *buf, int buflen, int* len) {
 
 void
 script_handle_input(struct stack *stack, const char *str) {
-  fprintf(stderr, "INPUT %s\n", str);
 }
