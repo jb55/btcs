@@ -802,6 +802,41 @@ script_push_raw(struct stack *stack, const char *data) {
   script_push_datastr(stack, data, 1);
 }
 
+void script_serialize_data(struct val val, u32 *len, u8 *buf, int bufsize) {
+  u8 *p;
+  p = byte_pool_get(val.ind, len);
+  if (*len < OP_PUSHDATA1) {
+    *buf++ = *len;
+    memcpy(buf, p, *len);
+    *len += 1;
+  }
+  else if (*len <= 0xFF) {
+    *buf++ = OP_PUSHDATA1;
+    *buf++ = *len;
+    memcpy(buf, p, *len);
+    *len += 2;
+  }
+  else if (*len <= 0xFFFF) {
+    *buf++ = OP_PUSHDATA2;
+    u16 *sp = (u16*)buf;
+    // TODO: writele16
+    *sp = *len;
+    buf += 2;
+    memcpy(buf, p, *len);
+    *len += 3;
+  }
+  else {
+    *buf++ = OP_PUSHDATA4;
+    u32 *ip = (u32*)buf;
+    // TODO: writele32
+    *ip = *len;
+    buf += 4;
+    memcpy(buf, p, *len);
+    *len += 5;
+  }
+  return;
+}
+
 void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len)
 {
   struct val *valp;
@@ -816,7 +851,8 @@ void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len)
     /* printf("%d %d\n", val.type, val.ind); */
     valp = (struct val*)sp;
 
-    if (valp->type == VT_SCRIPTNUM) {
+    switch (valp->type) {
+    case VT_SCRIPTNUM: {
       struct num *sn = num_pool_get(valp->ind);
 
       if (sn->val == -1) {
@@ -833,15 +869,17 @@ void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len)
       }
       else {
         val_serialize(*valp, &valsize, p+1, buflen-((p+1)-buf));
-        assert(valsize <= 0xFF);
         *p = (u8)valsize;
         valsize++;
       }
+      break;
     }
-    else {
+    case VT_DATA:
+      script_serialize_data(*valp, &valsize, p, buflen-(p-buf));
+      break;
+    default:
       val_serialize(*valp, &valsize, p, buflen-(p-buf));
     }
-
 
     p += valsize;
     *len += valsize;

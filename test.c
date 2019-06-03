@@ -129,8 +129,8 @@ TEST(big_int_serializes_ok) {
   cmp_data(buf, expected_in, len, ARRAY_SIZE(expected_in),
            "big int input serializes ok");
 
-  script_eval(buf, ARRAY_SIZE(expected_in), stack, result);
-  stack_serialize(stack, buf, ARRAY_SIZE(buf), &len);
+  script_eval(buf, sizeof(expected_in), stack, result);
+  stack_serialize(stack, buf, sizeof(buf), &len);
 
   cmp_data(buf, expected_out, len, ARRAY_SIZE(expected_out),
            "big int output serializes ok");

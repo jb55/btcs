@@ -52,44 +52,11 @@ void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
     *len = 1;
     *buf = val.ind & 0xFF;
     return;
+  case VT_DATA:
   case VT_RAW: {
     u8 *p;
     p = byte_pool_get(val.ind, len);
     memcpy(buf, p, *len);
-    return;
-  }
-  case VT_DATA: {
-    u8 *p;
-    p = byte_pool_get(val.ind, len);
-    if (*len < OP_PUSHDATA1) {
-      *buf++ = *len;
-      memcpy(buf, p, *len);
-      *len += 1;
-    }
-    else if (*len <= 0xFF) {
-      *buf++ = OP_PUSHDATA1;
-      *buf++ = *len;
-      memcpy(buf, p, *len);
-      *len += 2;
-    }
-    else if (*len <= 0xFFFF) {
-      *buf++ = OP_PUSHDATA2;
-      u16 *sp = (u16*)buf;
-      // TODO: writele16
-      *sp = *len;
-      buf += 2;
-      memcpy(buf, p, *len);
-      *len += 3;
-    }
-    else {
-      *buf++ = OP_PUSHDATA4;
-      u32 *ip = (u32*)buf;
-      // TODO: writele32
-      *ip = *len;
-      buf += 4;
-      memcpy(buf, p, *len);
-      *len += 5;
-    }
     return;
   }
   case VT_SMALLINT:
