@@ -102,11 +102,10 @@ enum sn_result
 sn_from_data(u8 *data, u16 size, struct num **num) {
   u16 ind;
   s64 i;
-  i = int_from_data(data, size);
-  if (int_overflowed(i)) {
-    *num = 0;
+  if (size > 4)
     return SN_ERR_OVERFLOWED_INT;
-  }
+  i = int_from_data(data, size);
+  /* printf("%" PRId64" okkkk\n", i); */
   *num = num_pool_new(&ind);
   (*num)->val = i;
   (*num)->ind = ind;
@@ -136,6 +135,7 @@ sn_from_val(struct val val, struct num ** sn, int require_minimal) {
       (*sn)->val = val.ind;
 
     return SN_SUCCESS;
+  case VT_RAW:
   case VT_DATA: {
     u8 *data;
     u32 size;

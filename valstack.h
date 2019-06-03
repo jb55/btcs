@@ -38,8 +38,8 @@ stack_push_val(struct stack *stack, struct val val) {
 }
 
 static inline void
-stack_push_data(struct stack *stack, u8 *data, int len) {
-  struct val val = { .type = VT_DATA };
+stack_push_raw(struct stack *stack, u8 *data, int len) {
+  struct val val = { .type = VT_RAW };
   u8 *p;
   u16 ind;
   p = byte_pool_new(len, &ind);

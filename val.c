@@ -93,6 +93,7 @@ void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
     return;
   }
   case VT_SMALLINT:
+    assert(0);
     *len = 1;
     n = val.ind;
     if (n >= -1 && n <= 16) {

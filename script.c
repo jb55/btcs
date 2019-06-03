@@ -8,6 +8,7 @@
 #include "sha256.h"
 #include "ripemd160.h"
 #include <stdio.h>
+#include <inttypes.h>
 
 /* #define SCRIPTERR(serr) script_add_error(c, opcode, serr) */
 #define SCRIPTERR(serr) { err = serr; goto evalerror; }
@@ -114,7 +115,7 @@ int
 script_eval(const u8 *script, size_t script_size, struct stack *stack,
             struct result *result) {
   int op_count = 0;
-  u32 tmplen;
+  u32 tmplen = 0;
   char *err = NULL;
   const u8 *p = script;
   const u8 *top = script + script_size;
@@ -140,7 +141,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
 
   while (p < top) {
     c++;
-    script_getop(&p, top, &opcode, (u8*)tmpbuf, ARRAY_SIZE(tmpbuf), &tmplen);
+    script_getop(&p, top, &opcode, tmpbytes, sizeof(tmpbytes), &tmplen);
     int if_exec = !stack_any_val(ifstack, falseval);
 
     // Note OP_RESERVED does not count towards the opcode limit.
@@ -806,7 +807,7 @@ void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len)
   struct val *valp;
   void **sp;
   u8 *p = buf;
-  u32 valsize;
+  u32 valsize = 0;
   *len = 0;
   sp = stack->bottom;
 
