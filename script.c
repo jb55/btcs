@@ -170,7 +170,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
       /* if (fRequireMinimal && !CheckMinimalPush(vchPushValue, opcode)) { */
       /*   return set_error(serror, MINIMALDATA); */
       /* } */
-      stack_push_data(stack, (u8*)tmpbuf, tmplen);
+      stack_push_raw(stack, tmpbytes, tmplen);
     } else if (if_exec || (OP_IF <= opcode && opcode <= OP_ENDIF))
     switch (opcode) {
     case OP_1NEGATE:

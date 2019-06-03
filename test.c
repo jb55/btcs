@@ -140,6 +140,7 @@ TEST(test_small_int) {
   int len;
   static u8 buf[6];
   static u8 expected_in[] = { 0x01, 0x7f };
+  static u8 expected_out[] = { 0x7f };
 
   script_push_int(script, 127);
   script_serialize(script, buf, sizeof(buf), &len);
@@ -148,7 +149,7 @@ TEST(test_small_int) {
 
   script_eval(buf, sizeof(expected_in), stack, result);
   stack_serialize(stack, buf, sizeof(buf), &len);
-  cmp_data(buf, expected_in, len, sizeof(expected_in),
+  cmp_data(buf, expected_out, len, sizeof(expected_out),
            "small integer output serializes ok");
 }
 
