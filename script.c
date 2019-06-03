@@ -801,8 +801,7 @@ script_push_raw(struct stack *stack, const char *data) {
   script_push_datastr(stack, data, 1);
 }
 
-void script_serialize_(struct stack *stack, u8 *buf, int buflen,
-                      int* len, int serialize_minimal)
+void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len)
 {
   struct val *valp;
   void **sp;
@@ -815,8 +814,57 @@ void script_serialize_(struct stack *stack, u8 *buf, int buflen,
     /* printf("%02x %02x %02x %02x | ", huh[0], huh[1], huh[2], huh[3]); */
     /* printf("%d %d\n", val.type, val.ind); */
     valp = (struct val*)sp;
-    val_serialize(*valp, &valsize, p, buflen-(p-buf),
-                  serialize_minimal);
+
+    if (valp->type == VT_SCRIPTNUM) {
+      struct num *sn = num_pool_get(valp->ind);
+
+      if (sn->val == -1) {
+        valsize = 1;
+        *p = OP_1NEGATE;
+      }
+      else if (sn->val == 0 ) {
+        valsize = 1;
+        *p = 0;
+      }
+      else if (sn->val >= 1 && sn->val <= 16 ) {
+        valsize = 1;
+        *p = OP_1 - 1 + sn->val;
+      }
+      else {
+        val_serialize(*valp, &valsize, p+1, buflen-((p+1)-buf));
+        assert(valsize <= 0xFF);
+        *p = (u8)valsize;
+        valsize++;
+      }
+    }
+    else {
+      val_serialize(*valp, &valsize, p, buflen-(p-buf));
+    }
+
+
+    p += valsize;
+    *len += valsize;
+    assert(p-buf <= buflen);
+    sp++;
+  }
+
+}
+
+void stack_serialize(struct stack *stack, u8 *buf, int buflen, int *len) {
+  struct val *valp;
+  void **sp;
+  u8 *p = buf;
+  u32 valsize;
+  *len = 0;
+  sp = stack->bottom;
+
+  while (sp < stack->top) {
+    /* printf("%02x %02x %02x %02x | ", huh[0], huh[1], huh[2], huh[3]); */
+    /* printf("%d %d\n", val.type, val.ind); */
+    valp = (struct val*)sp;
+
+    val_serialize(*valp, &valsize, p, buflen-(p-buf));
+
     p += valsize;
     *len += valsize;
     assert(p-buf <= buflen);
@@ -826,14 +874,4 @@ void script_serialize_(struct stack *stack, u8 *buf, int buflen,
 
 void
 script_handle_input(struct stack *stack, const char *str) {
-}
-
-void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len)
-{
-  script_serialize_(stack, buf, buflen, len, 0);
-}
-
-void script_serialize_minimal(struct stack *stack, u8 *buf, int buflen, int* len)
-{
-  script_serialize_(stack, buf, buflen, len, 1);
 }

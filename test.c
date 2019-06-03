@@ -95,20 +95,21 @@ TEST(test_2dup_not_enough_input) {
 
 TEST(negative_integer) {
   static u8 buf[6];
-  int len;
-  u8 in_script[] = { 0x01, 0x82 };
-  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
-  script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
-  cmp_data(buf, in_script, len, ARRAY_SIZE(in_script), "negative 2 serializes ok");
+  int buflen;
+  u8 expected_in[] = { 0x01, 0x82 };
+  u8 expected_out[] = { 0x82 };
+  script_eval(expected_in, sizeof(expected_in), stack, result);
+  stack_serialize(stack, buf, sizeof(buf), &buflen);
+  cmp_data(buf, expected_out, buflen, sizeof(expected_out), "negative 2 serializes ok");
 }
 
 TEST(add_negative_two) {
   static u8 buf[12];
   int len;
   static u8 in_script[] = { 0x01, 0x82, 0x01, 0x82, OP_ADD };
-  static u8 expected_out[] = { 0x01, 0x84 };
-  int res = script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
-  script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
+  static u8 expected_out[] = { 0x84 };
+  script_eval(in_script, ARRAY_SIZE(in_script), stack, result);
+  stack_serialize(stack, buf, sizeof(buf), &len);
   cmp_data(buf, expected_out, len, ARRAY_SIZE(expected_out), "add negative two twice");
 }
 
@@ -117,7 +118,7 @@ TEST(big_int_serializes_ok) {
   static u8 buf[12];
   static u8 expected_in[] = { 0x04, 0xff, 0xff, 0xff, 0x7f,
                               0x04, 0xff, 0xff, 0xff, 0x7f, OP_ADD };
-  static u8 expected_out[] = { 0x05, 0xfe, 0xff, 0xff, 0xff, 0 };
+  static u8 expected_out[] = { 0xfe, 0xff, 0xff, 0xff, 0 };
 
   script_push_int(script, 2147483647LL);
   script_push_int(script, 2147483647LL);
@@ -129,7 +130,7 @@ TEST(big_int_serializes_ok) {
            "big int input serializes ok");
 
   script_eval(buf, ARRAY_SIZE(expected_in), stack, result);
-  script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
+  stack_serialize(stack, buf, ARRAY_SIZE(buf), &len);
 
   cmp_data(buf, expected_out, len, ARRAY_SIZE(expected_out),
            "big int output serializes ok");
@@ -141,14 +142,26 @@ TEST(test_small_int) {
   static u8 expected_in[] = { 0x01, 0x7f };
 
   script_push_int(script, 127);
-  script_serialize(script, buf, ARRAY_SIZE(buf), &len);
-  cmp_data(buf, expected_in, len, ARRAY_SIZE(expected_in),
+  script_serialize(script, buf, sizeof(buf), &len);
+  cmp_data(buf, expected_in, len, sizeof(expected_in),
            "small integer input serializes ok");
 
-  script_eval(buf, ARRAY_SIZE(expected_in), stack, result);
-  script_serialize(stack, buf, ARRAY_SIZE(buf), &len);
-  cmp_data(buf, expected_in, len, ARRAY_SIZE(expected_in),
+  script_eval(buf, sizeof(expected_in), stack, result);
+  stack_serialize(stack, buf, sizeof(buf), &len);
+  cmp_data(buf, expected_in, len, sizeof(expected_in),
            "small integer output serializes ok");
+}
+
+void test_sn_serialize_small() {
+  static u8 buf[2] = {0};
+  struct num sn;
+  static u8 expected_serial[] = { 0x01, 0x7f };
+  u16 len;
+  sn_from_int(127, &sn);
+  sn_serialize(&sn, buf, sizeof(buf), &len);
+
+  cmp_data(buf, expected_serial, len, sizeof(expected_serial),
+           "small scriptnum (127) serializes ok");
 }
 
 // TODO test scriptnum overflows

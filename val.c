@@ -31,11 +31,10 @@ val_from_int(s64 intval) {
 void val_bytes(struct val val, u32 *len, u8 *buf, int bufsize) {
   if (val.type == VT_DATA)
     val.type = VT_RAW;
-  static const int serialize_minimal = 0;
-  val_serialize(val, len, buf, bufsize, serialize_minimal);
+  val_serialize(val, len, buf, bufsize);
 }
 
-void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize, int serialize_minimal) {
+void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
   struct num *sn;
   int n;
   u16 valsize;
@@ -44,15 +43,7 @@ void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize, int serialize
     sn = num_pool_get(val.ind);
     assert(sn);
 
-    if (serialize_minimal) {
-      if (sn->val == -1) { *len = 1; *buf = OP_1NEGATE; return; }
-      if (sn->val == 0 ) { *len = 1; *buf = 0; return; }
-      if (sn->val >= 1 && sn->val <= 16 ) {
-        *len = 1;
-        *buf = OP_1 - 1 + sn->val;
-        return;
-      }
-    }
+    /// TODO: if serialize_minimal
     sn_serialize(sn, buf, bufsize, &valsize);
     assert(valsize <= 0xFF);
     *len = valsize;
@@ -130,8 +121,8 @@ val_eq(struct val a, struct val b, int require_minimal) {
   // TODO: do I need to serialize to compare?
   /* abytes = val_serialize(a, &alen, require_minimal); */
   /* bbytes = val_serialize(b, &blen, require_minimal); */
-  val_serialize(a, &alen, tmpa, tmpsize, 0);
-  val_serialize(b, &blen, tmpb, tmpsize, 0);
+  val_serialize(a, &alen, tmpa, tmpsize);
+  val_serialize(b, &blen, tmpb, tmpsize);
   // TODO: what if they're semantically equivalent? or does that matter
   // (eg. minimal vs not miniminal)?
 

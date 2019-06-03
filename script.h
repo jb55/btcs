@@ -22,7 +22,7 @@ void  script_push_raw(struct stack *, const char *str);
 void  script_push_datastr(struct stack *, const char *str, int israw);
 
 void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len);
-void script_serialize_minimal(struct stack *stack, u8 *buf, int buflen, int* len);
+void stack_serialize(struct stack *stack, u8 *buf, int buflen, int* len);
 
 extern int g_silence_script_err;
 extern int g_silence_script_warn;
