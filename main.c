@@ -60,11 +60,11 @@ int main(int argc, const char *argv[]) {
     printf("%02x", buf[i]);
   printf("\n");
 
-  printf("output     ");
+  printf("stack      ");
   script_print_vals(&tmp_stack);
   stack_serialize(&tmp_stack, buf, bufsize, &compiled_len);
 
-  printf("output_hex  ");
+  printf("stack_hex   ");
   for(i = 0; i < compiled_len; ++i)
     printf("%02x", buf[i]);
   printf("\n");

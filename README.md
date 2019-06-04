@@ -31,5 +31,6 @@ $ btcs 1 2 16 3dup 2swap
 script      1 2 16 OP_3DUP OP_2SWAP
 script_hex  5152606f72
 stack       1 2 2 16 16 1
-stack_hex   515252606051
+stack_hex   010202101001
+results     success
 ```
