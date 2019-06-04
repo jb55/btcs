@@ -5,9 +5,9 @@
 
   bitcoin script parser/evaluator/compiler/decompiler
   
-  **WARNING**: This has not been rigorously tested, do not depend on script
-  outputs when determining actual payees. Make sure to test on testnet first if
-  you do.
+  **WARNING**: This is not a consensus-critical implementation of
+  bitcoin script. Make sure to actually test your script on testnet or
+  with something like [btcdeb](https://github.com/kallewoof/btcdeb).
 
 ## Motivation
 
