@@ -114,8 +114,7 @@ sn_from_data(u8 *data, u16 size, struct num **num) {
 
 
 // Return a script num only if it's still a 4-byte integer
-enum sn_result
-sn_from_val(struct val val, struct num ** sn, int require_minimal) {
+enum sn_result sn_from_val(struct val val, struct num ** sn) {
 
   switch (val.type) {
   case VT_SMALLINT:

@@ -32,21 +32,21 @@ typedef uint64_t       u64;
 #define le16toh(x) (x)
 #define le32toh(x) (x)
 
-u16 static inline
+inline static u16
 readle16(const u8* ptr) {
   u16 x;
   memcpy((char*)&x, ptr, 2);
   return le16toh(x);
 }
 
-u32 static inline
+inline static u32
 readle32(const u8* ptr) {
   u32 x;
   memcpy((char*)&x, ptr, 4);
   return le32toh(x);
 }
 
-void static inline
+inline static void
 print_bytes(u8 *bytes, size_t size, int with_space) {
   size_t i;
   for (i = 0; i < size; i++) {

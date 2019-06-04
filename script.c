@@ -5,6 +5,7 @@
 #include "stack.h"
 #include "alloc.h"
 #include "valstack.h"
+#include "compiler.h"
 #include "sha256.h"
 #include "ripemd160.h"
 #include <stdio.h>
@@ -428,7 +429,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         struct num *n;
 
         enum sn_result res =
-          sn_from_val(stack_top_val(stack, -1), &n, require_minimal);
+          sn_from_val(stack_top_val(stack, -1), &n);
 
         if (res != SN_SUCCESS) {
           sprintf(tmpbuf, "invalid scriptnum %d", res);
@@ -503,7 +504,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
             SCRIPTERR("INVALID_STACK_OPERATION");
         struct val v1 = stack_top_val(stack, -2);
         struct val v2 = stack_top_val(stack, -1);
-        int equal = val_eq(v1, v2, require_minimal);
+        int equal = val_eq(v1, v2);
         // OP_NOTEQUAL is disabled because it would be too easy to say
         // something like n != 1 and have some wiseguy pass in 1 with extra
         // zero bytes after it (numerically, 0x01 == 0x0001 == 0x000001)
@@ -538,7 +539,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
             SCRIPTERR("INVALID_STACK_OPERATION");
         struct num *bn; 
         enum sn_result res =
-          sn_from_val(stack_top_val(stack, -1), &bn, require_minimal);
+          sn_from_val(stack_top_val(stack, -1), &bn);
 
         if (res != SN_SUCCESS) {
           sprintf(tmpbuf, "invalid scriptnum %d", res);
@@ -583,10 +584,10 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         struct num *bn1, *bn2, bn;
         enum sn_result res;
         bn.ind = -1;
-        res = sn_from_val(stack_top_val(stack, -2), &bn1, require_minimal);
+        res = sn_from_val(stack_top_val(stack, -2), &bn1);
         if (res == SN_ERR_OVERFLOWED_INT)
           SCRIPTERR("SCRIPT_INT_OVERFLOW");
-        res = sn_from_val(stack_top_val(stack, -1), &bn2, require_minimal);
+        res = sn_from_val(stack_top_val(stack, -1), &bn2);
         if (res == SN_ERR_OVERFLOWED_INT)
           SCRIPTERR("SCRIPT_INT_OVERFLOW");
         /* struct num bn(0); */
@@ -640,9 +641,9 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         if (stack_size(stack) < 3)
             SCRIPTERR("INVALID_STACK_OPERATION");
         struct num *bn1, *bn2, *bn3;
-        sn_from_val(stack_top_val(stack, -3), &bn1, require_minimal);
-        sn_from_val(stack_top_val(stack, -2), &bn2, require_minimal);
-        sn_from_val(stack_top_val(stack, -1), &bn3, require_minimal);
+        sn_from_val(stack_top_val(stack, -3), &bn1);
+        sn_from_val(stack_top_val(stack, -2), &bn2);
+        sn_from_val(stack_top_val(stack, -1), &bn3);
         int fval = bn2->val <= bn1->val && bn1->val < bn3->val;
         stack_pop(stack);
         stack_pop(stack);
@@ -802,7 +803,7 @@ script_push_raw(struct stack *stack, const char *data) {
   script_push_datastr(stack, data, 1);
 }
 
-void script_serialize_data(struct val val, u32 *len, u8 *buf, int bufsize) {
+void script_serialize_data(struct val val, u32 *len, u8 *buf) {
   u8 *p;
   p = byte_pool_get(val.ind, len);
   if (*len < OP_PUSHDATA1) {
@@ -875,7 +876,7 @@ void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len)
       break;
     }
     case VT_DATA:
-      script_serialize_data(*valp, &valsize, p, buflen-(p-buf));
+      script_serialize_data(*valp, &valsize, p);
       break;
     default:
       val_serialize(*valp, &valsize, p, buflen-(p-buf));
@@ -912,5 +913,5 @@ void stack_serialize(struct stack *stack, u8 *buf, int buflen, int *len) {
 }
 
 void
-script_handle_input(struct stack *stack, const char *str) {
+script_handle_input(struct stack *stack UNUSED, const char *str UNUSED) {
 }

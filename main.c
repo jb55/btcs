@@ -12,12 +12,13 @@ char * g_reader_buf;
 char * g_reader_buf_top;
 struct stack g_reader_stack;
 u32 g_reader_buf_cap;
+void yy_scan_string(const char *);
+
 
 void yyerror(const char* s);
 
 
-void
-parse_error(char* err) {
+void parse_error(char* err) {
   fprintf(stderr, "[btcs] parse error: %s\n", err);
   exit(1);
 }

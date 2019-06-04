@@ -5,6 +5,7 @@
 #include "script.h"
 #include "op.h"
 
+int fileno(FILE *stream);
 #define YY_DECL int yylex()
 
 #include "parser.tab.h"

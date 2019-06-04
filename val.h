@@ -36,7 +36,7 @@ struct val val_copy(struct val a);
 u32 val_size(struct val val);
 
 int
-val_eq(struct val a, struct val b, int require_minimal);
+val_eq(struct val a, struct val b);
 
 void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize);
 void val_bytes(struct val val, u32 *len, u8 *buf, int bufsize);

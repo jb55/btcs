@@ -77,8 +77,8 @@ void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize) {
   assert(!"val_serialize missing implementation");
 }
 
-int
-val_eq(struct val a, struct val b, int require_minimal) {
+
+int val_eq(struct val a, struct val b) {
   u32 alen = 0, blen = 0;
   int eq = 0;
 

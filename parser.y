@@ -8,7 +8,10 @@
 
 extern int yylex();
 extern struct stack g_reader_stack;
-void yyerror(const char* s);
+void yyerror(const char *s);
+
+void script_handle_input(struct stack *stack, const char *str);
+void parse_error(const char *err);
 
 %}
 

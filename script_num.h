@@ -22,7 +22,7 @@ int
 sn_overflowed(struct num *num);
 
 enum sn_result
-sn_from_val(struct val val, struct num ** sn, int require_minimal);
+sn_from_val(struct val val, struct num ** sn);
 
 struct val
 sn_to_val(struct num *sn);
@@ -34,18 +34,15 @@ void
 sn_serialize(struct num *sn, u8 *buf, int bufsize, u16 *len);
 
 
-static void inline
-sn_add(struct num *a, struct num *b, struct num *c) {
+inline static void sn_add(struct num *a, struct num *b, struct num *c) {
   c->val = a->val + b->val;
 }
 
-static void inline
-sn_sub(struct num *a, struct num *b, struct num *c) {
+inline static void sn_sub(struct num *a, struct num *b, struct num *c) {
   c->val = a->val - b->val;
 }
 
-static void inline
-sn_neg(struct num *a, struct num *b) {
+inline static void sn_neg(struct num *a, struct num *b) {
   b->val = -(a->val);
 }
 
