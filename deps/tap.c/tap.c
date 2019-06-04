@@ -229,8 +229,7 @@ exit_status () {
     return retval;
 }
 
-int
-bail_out (int ignore, const char *fmt, ...) {
+int bail_out (const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     printf("Bail out!  ");
@@ -241,8 +240,7 @@ bail_out (int ignore, const char *fmt, ...) {
     return 0;
 }
 
-void
-tap_skip (int n, const char *fmt, ...) {
+void tap_skip (int n, const char *fmt, ...) {
     char *why;
     va_list args;
     va_start(args, fmt);
@@ -255,8 +253,7 @@ tap_skip (int n, const char *fmt, ...) {
     free(why);
 }
 
-void
-tap_todo (int ignore, const char *fmt, ...) {
+void tap_todo (const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     todo_mesg = vstrdupf(fmt, args);

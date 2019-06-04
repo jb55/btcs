@@ -4,16 +4,17 @@
 #include "op.h"
 #include "alloc.h"
 #include "valstack.h"
+#include "compiler.h"
 #include "tap.c/tap.h"
 
 typedef void (program)(struct stack *script, struct stack *stack,\
                        struct result *result, struct stack *expected);
 
 #define RUNTEST(test) run_test(script, stack, expected, result, test)
-#define TEST(test) static inline void test(struct stack *script, \
+#define TEST(test) static inline void test(struct stack *script UNUSED, \
                                            struct stack *stack, \
                                            struct result *result,   \
-                                           struct stack *expected  \
+                                           struct stack *expected UNUSED  \
                                           )
 
 
@@ -57,7 +58,7 @@ ok_stacks_equal(struct stack *s1, struct stack *s2, const char *context) {
     v1 = stack_top_val(s1, i);
     v2 = stack_top_val(s2, i);
 
-    if (!val_eq(v1, v2, 0)) {
+    if (!val_eq(v1, v2)) {
       is(val_name(v1), val_name(v2), "%s: stack vals match", context);
     }
   }
@@ -194,7 +195,7 @@ run_test(struct stack *script, struct stack *stack, struct stack *expected,
 
 
 int
-main(int argc, char *argv[]) {
+main(int argc UNUSED, char *argv[] UNUSED) {
   struct stack _stack, _expected, _script;
   struct result _result;
   struct stack *script   = &_script;

@@ -33,13 +33,13 @@ int     isnt_at_loc     (const char *file, int line, const char *got,
                          const char *expected, const char *fmt, ...);
 int     cmp_ok_at_loc   (const char *file, int line, int a, const char *op,
                          int b, const char *fmt, ...);
-int     bail_out        (int ignore, const char *fmt, ...);
+int     bail_out        (const char *fmt, ...);
 void    tap_plan        (int tests, const char *fmt, ...);
 int     diag            (const char *fmt, ...);
 int     note            (const char *fmt, ...);
 int     exit_status     (void);
 void    tap_skip        (int n, const char *fmt, ...);
-void    tap_todo        (int ignore, const char *fmt, ...);
+void    tap_todo        (const char *fmt, ...);
 void    tap_end_todo    (void);
 
 #define NO_PLAN          -1
