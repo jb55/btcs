@@ -19,7 +19,7 @@
 - [ ] Evaluator (partially complete)
 - [X] Compiler
 - [X] Decompiler
-- [ ] Docs
+- [X] Docs
 
 ## Usage
 
