@@ -102,12 +102,12 @@ static int compile(int compile_options, int argc, const char *argv[])
 
   if (compile_options & COMPILE_SHOW_RESULTS) {
 	  if (compile_options & COMPILE_SHOW_LABELS)
-		printf("results    ");
+		printf("results     ");
 	  if (result.error)
-		  printf(" error:%d:%s:%s", result.op_count, result.error,
+		  printf("error:%d:%s:%s", result.op_count, result.error,
 			 op_name(result.last_op));
 	  else
-		  printf(" success");
+		  printf("success");
 	  printf("\n");
   }
 
@@ -149,6 +149,16 @@ static void usage()
 	exit(1);
 }
 
+static u32 count_bits(u32 n)
+{
+	u32 count = 0;
+	while (n) {
+		n &= (n-1) ;
+		count++;
+	}
+	return count;
+}
+
 int main(int argc, const char *argv[])
 {
 	static u8 buf[20000];
@@ -158,7 +168,7 @@ int main(int argc, const char *argv[])
 	size_t written;
 	int compile_options = 0;
 	int last_opt = 0;
-	bool hide_labels = false;
+	int hide_labels = -1;
 
 	if (argc == 2 && (streq(argv[1], "-h") || streq(argv[1], "--help")))
 		usage();
@@ -166,16 +176,20 @@ int main(int argc, const char *argv[])
 	for (int i = 1; i < argc; i++) {
 		if (streq(argv[i], "-d") || streq(argv[i], "--decompile"))
 			is_decompile = true;
-		else if (streq(argv[i], "+sh"))
+		else if (streq(argv[i], "+sh") || streq(argv[i], "--script-hex"))
 			compile_options |= COMPILE_SHOW_SCRIPT_HEX;
-		else if (streq(argv[i], "+s"))
-			compile_options |= COMPILE_SHOW_SCRIPT_HEX;
-		else if (streq(argv[i], "+st"))
+		else if (streq(argv[i], "+s") || streq(argv[i], "--script"))
+			compile_options |= COMPILE_SHOW_SCRIPT;
+		else if (streq(argv[i], "+st") || streq(argv[i], "--stack"))
 			compile_options |= COMPILE_SHOW_STACK;
-		else if (streq(argv[i], "+sth"))
+		else if (streq(argv[i], "+sth") || streq(argv[i], "--stack-hex"))
 			compile_options |= COMPILE_SHOW_STACK_HEX;
-		else if (streq(argv[i], "-q") || streq(argv[i], "--hide-labels"))
-			hide_labels = true;
+		else if (streq(argv[i], "+r") || streq(argv[i], "--results"))
+			compile_options |= COMPILE_SHOW_RESULTS;
+		else if (streq(argv[i], "-l") || streq(argv[i], "--hide-labels"))
+			hide_labels = 1;
+		else if (streq(argv[i], "+l") || streq(argv[i], "--show-labels"))
+			hide_labels = 0;
 		else {
 			last_opt = i-1;
 			input = argv[i];
@@ -198,8 +212,13 @@ int main(int argc, const char *argv[])
 		if (!compile_options)
 			compile_options = COMPILE_SHOW_ALL;
 
+		if (hide_labels == -1)
+			hide_labels = count_bits(compile_options) == 1;
+
 		if (hide_labels)
 			compile_options &= ~COMPILE_SHOW_LABELS;
+		else
+			compile_options |= COMPILE_SHOW_LABELS;
 
 		exit( compile(compile_options, argc - last_opt, argv + last_opt) );
 	}
