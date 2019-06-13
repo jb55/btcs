@@ -198,15 +198,29 @@ int main(int argc, const char *argv[])
 	}
 
 	if (is_decompile) {
-		int ok = read_arg_or_stdin(input, buf, sizeof(buf), &written);
+		// we have stdin
+		char *line = NULL;
+		ssize_t len = 0;
+		size_t n;
+		int ok;
 
-		if (!ok)
-			fail(3, "failed to read file or stdin");
+		if (input == NULL) {
+			while ((len = getline(&line, &n, stdin)) != -1) {
+				ok = decompile(line, len-1);
 
-		ok = decompile((const char *)buf, written);
+				if (!ok)
+					fail(5, "failed to decompile");
+			}
+		}
+		else {
+			ok = read_arg_or_stdin(input, buf, sizeof(buf), &written);
 
-		if (!ok)
-			fail(4, "failed to decompile");
+			if (!ok)
+				fail(4, "failed to read input arg (too big?)");
+
+		}
+
+
 	}
 	else {
 		if (!compile_options)
