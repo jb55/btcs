@@ -1,4 +1,4 @@
-CFLAGS=-g -DHAVE_LITTLE_ENDIAN -O2 -Ideps -std=c99 -Wall -Wextra -Werror -Wno-unused-variable -Wno-unused-function -Wunreachable-code
+CFLAGS=-g -DHAVE_LITTLE_ENDIAN -O2 -Ideps -std=c99 -Wall -Wextra -Werror -Wno-unused-variable -Wno-unused-function 
 
 DEPS=script.c \
      oplookup.c \
