@@ -539,7 +539,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         // (in -- out)
         if (stack_size(stack) < 1)
             SCRIPTERR("INVALID_STACK_OPERATION");
-        struct num *bn; 
+        struct num *bn;
         enum sn_result res =
           sn_from_val(stack_top_val(stack, -1), &bn);
 
@@ -762,9 +762,10 @@ void script_print(const u8 *script, size_t script_size, int abbrev_data) {
 
     if (is_push_data(opcode)) {
 	    if (abbrev_data)
-		    printf("data(%d) ", len);
+		    printf("data(%d)", len);
 	    else
-		hex_print(tmpbuf, len);
+		    hex_print(tmpbuf, len);
+	    printf(" ");
     }
     else
 	    printf("%s ", op_name(opcode));
