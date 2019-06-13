@@ -50,8 +50,9 @@ cast_to_bool(struct val val) {
   assert(!"Unhandled val.type in cast_to_bool");
 }
 
-int
-script_getop(const u8 **p, const u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *outlen) {
+int script_getop(const u8 **p, const u8 *end, enum opcode *popcode, u8 *buf,
+		 int bufsize, u32 *outlen)
+{
   *popcode = OP_INVALIDOPCODE;
   u32 nsize = 0;
 
@@ -363,9 +364,9 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         // (x - 0 | x x)
         if (stack_size(stack) < 1)
           SCRIPTERR("INVALID_STACK_OPERATION");
-        struct val val = stack_top_val(stack, -1);
-        if (cast_to_bool(val))
-            stack_push_val(stack, val_copy(val));
+        struct val v = stack_top_val(stack, -1);
+        if (cast_to_bool(v))
+            stack_push_val(stack, val_copy(v));
     }
     break;
 
@@ -374,8 +375,8 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
         // -- stacksize
       struct num sn;
       sn_from_int(stack_size(stack), &sn);
-      struct val val = sn_to_val(&sn);
-      stack_push_val(stack, val);
+      struct val v = sn_to_val(&sn);
+      stack_push_val(stack, v);
     }
     break;
 
@@ -723,30 +724,64 @@ evalerror:
   return !err;
 }
 
-void script_print(u8 *script, size_t script_size) {
+
+static char hexchar(unsigned int val)
+{
+	if (val < 10)
+		return '0' + val;
+	if (val < 16)
+		return 'a' + val - 10;
+	assert(!"hexchar invalid val");
+}
+
+static void hex_print(const u8 *buf, size_t bufsize) {
+	for (size_t i = 0; i < bufsize; i++) {
+		unsigned int c = buf[i];
+		printf("%c%c", hexchar(c >> 4), hexchar(c & 0xF) );
+	}
+}
+
+
+static bool is_push_data(enum opcode op)
+{
+	return (op > OP_0 && op < OP_PUSHDATA1) ||
+		op == OP_PUSHDATA1 ||
+		op == OP_PUSHDATA2 ||
+		op == OP_PUSHDATA4;
+}
+
+void script_print(const u8 *script, size_t script_size) {
   u32 len;
   static u8 tmpbuf[4096];
-  u8 *t = tmpbuf;
   const u8 *p = script;
   const u8 *top = script + script_size;
+
   while (p < top) {
     enum opcode opcode;
-    script_getop(&p, top, &opcode, tmpbuf, ARRAY_SIZE(tmpbuf), &len);
-    u8 *ttop = tmpbuf + len;
-    printf("%s ", op_name(opcode));
-    if (t < ttop)
-      printf("%02x", *t++);
+    script_getop(&p, top, &opcode, tmpbuf, sizeof(tmpbuf), &len);
+
+    if (is_push_data(opcode)) {
+	    hex_print(tmpbuf, len);
+	    printf(" ");
+    }
+    else
+	    printf("%s ", op_name(opcode));
+
+    len = 0;
   }
   printf("\n");
 }
 
 void script_print_vals(struct stack *stack) {
   void **p = stack->bottom;
-  int c = 0;
+  bool first = true;
   while (p < stack->top) {
     struct val val;
     memcpy(&val, &*p++, sizeof(struct val));
-    printf(" ");
+    if (first)
+	    first = false;
+    else
+	    printf(" ");
     val_print(val);
   }
   putchar('\n');

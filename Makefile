@@ -1,4 +1,3 @@
-
 CFLAGS=-g -DHAVE_LITTLE_ENDIAN -O2 -Ideps -std=c99 -Wall -Wextra -Werror -Wno-unused-variable -Wno-unused-function -Wunreachable-code
 
 DEPS=script.c \
@@ -10,11 +9,12 @@ DEPS=script.c \
      sha256.c \
      ripemd160.c \
      compiler.c \
+     util.c \
      stack.c
 
 CLIDEPS=parser.tab.c \
-				lex.yy.c \
-        main.c
+	lex.yy.c \
+	main.c
 
 TESTDEPS=test.c
 
