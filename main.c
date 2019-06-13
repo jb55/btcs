@@ -125,7 +125,7 @@ static void fail(int err, const char *msg)
 }
 
 
-static int decompile(const char *str, int strlen)
+static int decompile(const char *str, int strlen, bool abbrev_data)
 {
 	static u8 buf[10000];
 
@@ -135,7 +135,7 @@ static int decompile(const char *str, int strlen)
 	hex_decode(str, strlen, buf, sizeof(buf));
 	size_t nbytes = strlen / 2;
 
-	script_print(buf, nbytes);
+	script_print(buf, nbytes, abbrev_data);
 
 	return 1;
 }
@@ -166,6 +166,7 @@ int main(int argc, const char *argv[])
 	bool is_decompile = false;
 	const char *input = NULL;
 	size_t written;
+	bool abbrev_data = false;
 	int compile_options = 0;
 	int last_opt = 0;
 	int hide_labels = -1;
@@ -190,6 +191,8 @@ int main(int argc, const char *argv[])
 			hide_labels = 1;
 		else if (streq(argv[i], "+l") || streq(argv[i], "--show-labels"))
 			hide_labels = 0;
+		else if (streq(argv[i], "--abbreviate-data"))
+			abbrev_data = true;
 		else {
 			last_opt = i-1;
 			input = argv[i];
@@ -206,7 +209,7 @@ int main(int argc, const char *argv[])
 
 		if (input == NULL) {
 			while ((len = getline(&line, &n, stdin)) != -1) {
-				ok = decompile(line, len-1);
+				ok = decompile(line, len-1, abbrev_data);
 
 				if (!ok)
 					fail(5, "failed to decompile");

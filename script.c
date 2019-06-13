@@ -750,7 +750,7 @@ static bool is_push_data(enum opcode op)
 		op == OP_PUSHDATA4;
 }
 
-void script_print(const u8 *script, size_t script_size) {
+void script_print(const u8 *script, size_t script_size, int abbrev_data) {
   u32 len;
   static u8 tmpbuf[4096];
   const u8 *p = script;
@@ -761,8 +761,10 @@ void script_print(const u8 *script, size_t script_size) {
     script_getop(&p, top, &opcode, tmpbuf, sizeof(tmpbuf), &len);
 
     if (is_push_data(opcode)) {
-	    hex_print(tmpbuf, len);
-	    printf(" ");
+	    if (abbrev_data)
+		    printf("data(%d) ", len);
+	    else
+		hex_print(tmpbuf, len);
     }
     else
 	    printf("%s ", op_name(opcode));

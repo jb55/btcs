@@ -24,7 +24,7 @@ void  script_push_datastr(struct stack *, const char *str, int israw);
 void script_serialize(struct stack *stack, u8 *buf, int buflen, int* len);
 void stack_serialize(struct stack *stack, u8 *buf, int buflen, int* len);
 
-void script_print(const u8 *script, size_t script_size);
+void script_print(const u8 *script, size_t script_size, int abbrev_data);
 int script_getop(const u8 **p, const u8 *end, enum opcode *popcode, u8 *buf, int bufsize, u32 *outlen);
 
 extern int g_silence_script_err;
