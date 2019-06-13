@@ -122,6 +122,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
   const u8 *top = script + script_size;
   static char tmpbuf[32];
   static u8 tmpbytes[MAX_SCRIPT_ELEMENT_SIZE];
+  static u8 tmpbytes2[MAX_SCRIPT_ELEMENT_SIZE];
   enum opcode opcode;
   struct val val_true = val_from_int(1);
   struct val val_false = val_from_int(0);
@@ -678,6 +679,10 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
       }
       else if (opcode == OP_SHA256) {
         sha256((struct sha256*)hash, tmpbytes, valsize);
+      }
+      else if (opcode == OP_HASH160) {
+        sha256((struct sha256*)tmpbytes2, tmpbytes, valsize);
+        ripemd160((struct ripemd160*)hash, tmpbytes2, 32);
       }
       else
         SCRIPTERR("unhandled hash opcode");
