@@ -112,6 +112,7 @@ val_copy(struct val a) {
   switch (a.type) {
   case VT_SMALLINT:
     return a;
+  case VT_RAW:
   case VT_DATA:
     src = byte_pool_get(a.ind, &len);
     dst = byte_pool_new(len, &newind);
