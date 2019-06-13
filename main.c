@@ -177,21 +177,21 @@ int main(int argc, const char *argv[])
 	for (int i = 1; i < argc; i++) {
 		if (streq(argv[i], "-d") || streq(argv[i], "--decompile"))
 			is_decompile = true;
-		else if (streq(argv[i], "+sh") || streq(argv[i], "--script-hex"))
+		else if (streq(argv[i], "-sh") || streq(argv[i], "--script-hex"))
 			compile_options |= COMPILE_SHOW_SCRIPT_HEX;
-		else if (streq(argv[i], "+s") || streq(argv[i], "--script"))
+		else if (streq(argv[i], "-s") || streq(argv[i], "--script"))
 			compile_options |= COMPILE_SHOW_SCRIPT;
-		else if (streq(argv[i], "+st") || streq(argv[i], "--stack"))
+		else if (streq(argv[i], "-t") || streq(argv[i], "--stack"))
 			compile_options |= COMPILE_SHOW_STACK;
-		else if (streq(argv[i], "+sth") || streq(argv[i], "--stack-hex"))
+		else if (streq(argv[i], "-th") || streq(argv[i], "--stack-hex"))
 			compile_options |= COMPILE_SHOW_STACK_HEX;
-		else if (streq(argv[i], "+r") || streq(argv[i], "--results"))
+		else if (streq(argv[i], "-r") || streq(argv[i], "--results"))
 			compile_options |= COMPILE_SHOW_RESULTS;
 		else if (streq(argv[i], "-l") || streq(argv[i], "--hide-labels"))
 			hide_labels = 1;
 		else if (streq(argv[i], "+l") || streq(argv[i], "--show-labels"))
 			hide_labels = 0;
-		else if (streq(argv[i], "--abbreviate-data"))
+		else if (streq(argv[i], "-a") || streq(argv[i], "--abbreviate-data"))
 			abbrev_data = true;
 		else {
 			last_opt = i-1;
