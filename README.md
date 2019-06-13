@@ -18,8 +18,8 @@
 - [X] Tokenizer
 - [ ] Evaluator (partially complete)
 - [X] Compiler
-- [ ] Syntax
-- [ ] Decompiler
+- [X] Decompiler
+- [ ] Docs
 
 ## Usage
 
