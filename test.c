@@ -1,4 +1,3 @@
-#pragma GCC diagnostic ignored "-Wint-conversion"
 
 #include "script.h"
 #include "op.h"
