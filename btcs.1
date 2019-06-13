@@ -1,0 +1,119 @@
+.de dT
+.ds Dt \\$2
+..
+.dT Time-stamp: "2019-06-13"
+.TH BTCS 1 \*(Dt "btcs" "User Commands"
+.SH NAME
+btcs \- A Bitcoin script compiler, evaluator and decompiler
+.SH SYNOPSIS
+.B btcs
+[\fI\,OPTION\/\fR]... -d <HEXSCRIPT> or [\fI\,EXPRS\/\fR]...
+
+.SH DESCRIPTION
+btcs accepts bitcoin script over stdin or as arguments
+
+.SH DECOMPILER OPTIONS
+
+.TP
+.BR \-d ", " \-\^\-decompile
+Decompile a hex string representing bitcoin script
+
+.TP
+.BR \-a ", " \-\^\-abbreviate-data
+Abbreviate data pushes when printing script data.
+.br
+For example, hashes would appear as
+.B data(20)
+and
+.B data(32)
+
+.SH COMPILER OPTIONS
+
+.TP
+.BR {-,+}l ", " \-\^\-{hide,show}-labels
+Hide or show labels such as "script" and "script_hex".
+.br
+This will default to
+.B hide
+when there is only one printed output
+
+.TP
+.BR \-s ", " \-\^\-script
+Print the interpreted script
+
+.TP
+.BR \-s ", " \-\^\-script-hex
+Print the hex form of the script
+
+.TP
+.BR \-t ", " \-\^\-stack
+Print the stack output
+
+.TP
+.BR \-th ", " \-\^\-stack-hex
+Print the stack output as hex
+
+.TP
+.BR \-r ", " \-\^\-result
+Print the evaluation result
+
+
+.SH EXPRS
+
+.SS @<HEX>
+.br
+Prepends a minimal PUSHDATA op with the length of the hex string, and then pushes the hex data
+.br
+eg: @ffabcd
+
+.SS OPCODE
+.br
+A bitcoin opcode in the form OP_<NAME> or <NAME>
+
+.SS SCRIPTNUM
+.br
+Literal integers, which get converted to script nums (bitcoin script's number format)
+.br
+eg: 1 2 3 -1 2147483648
+
+.SS RAW BYTES
+.br
+Literal raw bytes, which may or may not be valid script.
+.br
+eg: pushdata1 0x02 0x0102
+.br
+You could use this for manual or non-minimal pushdata
+
+.SH EXAMPLES
+
+.SS
+Basic example
+.br
+$ btcs 1 2 add
+.br
+script      1 2 OP_ADD
+.br
+script_hex  515293
+.br
+stack       3
+.br
+stack_hex   03
+.br
+results     success
+
+.SS
+Just compile
+.br
+$ btcs -sh hash160 @b472a266d0bd89c13706a4132ccfb16f7c3b9fcb equalverify
+.br
+a914b472a266d0bd89c13706a4132ccfb16f7c3b9fcb88
+
+
+.SH BUGS
+The evaluator isn't consensus-critical. Please test your scripts on testnet before use.
+
+.SH AUTHOR
+
+William Casarin <jb55@jb55.com>
+.br
+Support my Bitcoin projects: bc1qthsruffh3qcn69hux2tcq87x95x8rmu4fdu9sm

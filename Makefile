@@ -60,7 +60,9 @@ lex.yy.c: lexer.l parser.tab.h
 
 install: $(BIN)
 	mkdir -p $(PREFIX)/bin
+	mkdir -p $(PREFIX)/share/btcs
 	cp $(BIN) $(PREFIX)/bin
+	cp btcs.1 $(PREFIX)/share/btcs
 
 $(BIN): $(OBJS) $(CLIOBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(CLIOBJS)
