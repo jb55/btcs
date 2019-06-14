@@ -206,13 +206,16 @@ int main(int argc, const char *argv[])
 		ssize_t len = 0;
 		size_t n;
 		int ok;
+		bool failed = false;
 
 		if (input == NULL) {
 			while ((len = getline(&line, &n, stdin)) != -1) {
 				ok = decompile(line, len-1, abbrev_data);
 
-				if (!ok)
-					fail(5, "failed to decompile");
+				if (!ok) {
+					failed = true;
+					fprintf(stderr, "failed to decompile\n");
+				}
 			}
 		}
 		else {
@@ -222,6 +225,9 @@ int main(int argc, const char *argv[])
 				fail(4, "failed to read input arg (too big?)");
 
 		}
+
+		if (failed)
+			exit(5);
 
 
 	}
