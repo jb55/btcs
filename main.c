@@ -224,7 +224,12 @@ int main(int argc, const char *argv[])
 			if (!ok)
 				fail(4, "failed to read input arg (too big?)");
 
-			decompile((const char *)buf, written, abbrev_data);
+			ok = decompile((const char *)buf, written, abbrev_data);
+
+			if (!ok) {
+				fprintf(stderr, "failed to decompile\n");
+				failed = true;
+			}
 		}
 
 		if (failed)
