@@ -109,12 +109,13 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 int read_arg_or_stdin(const char *arg, unsigned char *buf, size_t buflen,
 		      size_t *written)
 {
+	unsigned char dummy;
 	if (arg != NULL) {
 		unsigned char *p = buf;
 		bool done = false;
 		for (size_t i = 0; i < buflen; i++) {
 			*p = arg[i];
-			if (arg[i] == 0) {
+			if (*p == 0 || !char_to_hex(&dummy, *p)) {
 				done = true;
 				break;
 			}
