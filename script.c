@@ -755,24 +755,27 @@ void script_print(const u8 *script, size_t script_size, int abbrev_data) {
   static u8 tmpbuf[4096];
   const u8 *p = script;
   const u8 *top = script + script_size;
+  bool first = true;
 
   while (p < top) {
     enum opcode opcode;
     script_getop(&p, top, &opcode, tmpbuf, sizeof(tmpbuf), &len);
+
+    if (!first)
+	    putchar(' ');
+    first = false;
 
     if (is_push_data(opcode)) {
 	    if (abbrev_data)
 		    printf("data(%d)", len);
 	    else
 		    hex_print(tmpbuf, len);
-	    printf(" ");
     }
     else
-	    printf("%s ", op_name(opcode));
+	    printf("%s", op_name(opcode));
 
     len = 0;
   }
-  printf("\n");
 }
 
 void script_print_vals(struct stack *stack) {

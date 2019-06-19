@@ -125,15 +125,16 @@ static void fail(int err, const char *msg)
 }
 
 
-static int decompile(const char *str, int strlen, bool abbrev_data)
+static int decompile(const char *str, size_t *strlen, bool abbrev_data)
 {
 	static u8 buf[10000];
 
-	if (strlen % 2 != 0)
+	hex_decode(str, strlen, buf, sizeof(buf));
+
+	if (*strlen % 2 != 0)
 		return 0;
 
-	hex_decode(str, strlen, buf, sizeof(buf));
-	size_t nbytes = strlen / 2;
+	size_t nbytes = *strlen / 2;
 
 	script_print(buf, nbytes, abbrev_data);
 
@@ -203,14 +204,18 @@ int main(int argc, const char *argv[])
 	if (is_decompile) {
 		// we have stdin
 		char *line = NULL;
-		ssize_t len = 0;
+		ssize_t len = 0, prevlen;
 		size_t n;
 		int ok;
 		bool failed = false;
 
 		if (input == NULL) {
 			while ((len = getline(&line, &n, stdin)) != -1) {
-				ok = decompile(line, len-1, abbrev_data);
+				len--;
+				prevlen = len;
+				ok = decompile(line, (size_t*)&len, abbrev_data);
+
+				printf("%.*s\n", (int)(prevlen - len), line+len);
 
 				if (!ok) {
 					failed = true;
@@ -224,7 +229,8 @@ int main(int argc, const char *argv[])
 			if (!ok)
 				fail(4, "failed to read input arg (too big?)");
 
-			ok = decompile((const char *)buf, written, abbrev_data);
+			ok = decompile((const char *)buf, &written, abbrev_data);
+			printf("\n");
 
 			if (!ok) {
 				fprintf(stderr, "failed to decompile\n");
