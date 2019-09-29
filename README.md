@@ -19,6 +19,10 @@ deps: `python3`, `bison`, `flex`, a C compiler
 
     $ make install
 
+with nix:
+
+    $ nix-env -if .
+
 ## TODOs
 
 - [X] Tokenizer
