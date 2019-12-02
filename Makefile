@@ -16,13 +16,9 @@ CLIDEPS=parser.tab.c \
 	lex.yy.c \
 	main.c
 
-TESTDEPS=test.c
-
 # DEPS=oplookup.h script.h misc.h Makefile op.h stack.h
-TESTDEPS+=$(wildcard deps/*/*.c)
 OBJS=$(DEPS:.c=.o)
 CLIOBJS=$(CLIDEPS:.c=.o)
-TESTOBJS=$(TESTDEPS:.c=.o)
 
 GEN=parser.tab.c \
     parser.tab.h \
@@ -31,7 +27,6 @@ GEN=parser.tab.c \
     oplookup.h \
     $(OBJS) \
     $(CLIOBJS) \
-    $(TESTOBJS) \
 
 
 PREFIX ?= /usr/local
@@ -41,7 +36,6 @@ all: $(BIN)
 
 include $(OBJS:.o=.d)
 include $(CLIOBJS:.o=.d)
-include $(TESTOBJS:.o=.d)
 
 op.c: oplookup.h oplookup.c
 
@@ -67,17 +61,16 @@ install: $(BIN)
 $(BIN): $(OBJS) $(CLIOBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(CLIOBJS)
 
-run_tests: $(OBJS) $(TESTOBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(TESTOBJS)
 
-check: run_tests $(BIN)
-	@./run_tests
+check: $(BIN) fake
+	@sh -c "cd test && ./run"
 
-clean:
+clean: fake
 	rm -f $(GEN)
 	rm -f *.d
 
-TAGS:
+TAGS: fake
 	etags -o - *.c > $@
 
-.PHONY: TAGS test clean
+
+.PHONY: fake

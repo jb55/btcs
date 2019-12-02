@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+process () {
+    tail -n+2 "$1" | sed -n '/^--- failing/q;p'
+}
+
+n=1
+c=$(($(process tests.csv | wc -l)))
+
+printf "1..%d\n" "$c"
+
+process tests.csv | \
+(fail=0
+while IFS=, read -r description args input expected
+do
+    output=$(../btcs $args <<<"$input" 2>&1)
+	output2=${output//[$'\t\r\n']/ }
+    if [ "$output2" == "$expected" ]; then
+        printf "ok %d - %s\n" "$n" "$description"
+    else
+        printf "not ok %d - %s\n" "$n" "$description"
+        printf "#\n#    got '%s', expected '%s'\n#\n" "$output2" "$expected"
+        fail=1
+    fi
+    n=$((n + 1))
+done
+ exit $fail
+)
+
