@@ -1,0 +1,24 @@
+description,args,input,expected output
+test_simple,,OP_1									,script      1 script_hex  51 stack       1 stack_hex   01 results     success
+test_nip,,OP_1 OP_2 OP_NIP							,script      1 2 OP_NIP script_hex  515277 stack       2 stack_hex   02 results     success
+test_2dup_not_enough_input,,OP_1 OP_2DUP			,script      1 OP_2DUP script_hex  516e stack       1 stack_hex   01 results     error:2:INVALID_STACK_OPERATION:2DUP
+negative_integer,,-2								,script      -2 script_hex  0182 stack       0x82 stack_hex   82 results     success
+add_negative_two,,-2 -2 OP_ADD						,script      -2 -2 OP_ADD script_hex  0182018293 stack       -4 stack_hex   84 results     success
+big_int_serializes_ok,,2147483647 2147483647 OP_ADD	,script      2147483647 2147483647 OP_ADD script_hex  04ffffff7f04ffffff7f93 stack       @feffffff00 stack_hex   feffffff00 results     success
+test_small_int,,127									,script      127 script_hex  017f stack       0x7f stack_hex   7f results     success
+test_OP_1ADD,,16 OP_1ADD							,script      16 OP_1ADD script_hex  608b stack       17 stack_hex   11 results     success
+test_OP_1SUB,,16 OP_1SUB							,script      16 OP_1SUB script_hex  608c stack       15 stack_hex   0f results     success
+test_OP_NEGATE,,2 OP_NEGATE							,script      2 OP_NEGATE script_hex  528f stack       -2 stack_hex   82 results     success
+test_OP_NEGATE_negative,,-2 OP_NEGATE				,script      -2 OP_NEGATE script_hex  01828f stack       2 stack_hex   02 results     success
+test_OP_ABS,,2 OP_ABS								,script      2 OP_ABS script_hex  5290 stack       2 stack_hex   02 results     success
+test_OP_ABS_negative,,-2 OP_ABS						,script      -2 OP_ABS script_hex  018290 stack       2 stack_hex   02 results     success
+sub_negative_two,,-2 -12 OP_SUB						,script      -2 -12 OP_SUB script_hex  0182018c94 stack       10 stack_hex   0a results     success
+test_OP_DROP,,-1 OP_DROP							,script      -1 OP_DROP script_hex  4f75 stack        stack_hex    results     success
+test_OP_NOT_0,,0 OP_NOT								,script      0 OP_NOT script_hex  0091 stack       1 stack_hex   01 results     success
+test_OP_NOT_1,,1 OP_NOT								,script      1 OP_NOT script_hex  5191 stack       0 stack_hex   00 results     success
+test_OP_NOT_2,,2 OP_NOT								,script      2 OP_NOT script_hex  5291 stack       0 stack_hex   00 results     success
+test_OP_0NOTEQUAL0,,0 OP_0NOTEQUAL					,script      0 OP_0NOTEQUAL script_hex  0092 stack       0 stack_hex   00 results     success
+test_OP_0NOTEQUAL2,,2 OP_0NOTEQUAL					,script      2 OP_0NOTEQUAL script_hex  5292 stack       1 stack_hex   01 results     success
+test_ADD_SUB,,111 1 OP_ADD 12 OP_SUB				,script      111 1 OP_ADD 12 OP_SUB script_hex  016f51935c94 stack       100 stack_hex   64 results     success
+test_BOOLAND,,1 1 OP_BOOLAND						,script      1 1 OP_BOOLAND script_hex  51519a stack       1 stack_hex   01 results     success
+test_BOOLAND,,0 0 OP_BOOLAND						,script      0 0 OP_BOOLAND script_hex  00009a stack       0 stack_hex   00 results     success
