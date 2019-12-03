@@ -19,7 +19,7 @@ do
         printf "ok %d - %s\n" "$n" "$description"
     else
         printf "not ok %d - %s\n" "$n" "$description"
-        printf "#\n#    got '%s', expected '%s'\n#\n" "$output2" "$expected"
+        printf "#\n#    got      '%s', \n#    expected '%s'\n#\n" "$output2" "$expected"
         fail=1
     fi
     n=$((n + 1))
