@@ -22,3 +22,8 @@ test_OP_0NOTEQUAL2,,2 OP_0NOTEQUAL					,script      2 OP_0NOTEQUAL script_hex  5
 test_ADD_SUB,,111 1 OP_ADD 12 OP_SUB				,script      111 1 OP_ADD 12 OP_SUB script_hex  016f51935c94 stack       100 stack_hex   64 results     success
 test_BOOLAND,,1 1 OP_BOOLAND						,script      1 1 OP_BOOLAND script_hex  51519a stack       1 stack_hex   01 results     success
 test_BOOLAND,,0 0 OP_BOOLAND						,script      0 0 OP_BOOLAND script_hex  00009a stack       0 stack_hex   00 results     success
+test_OP_0,,OP_0 OP_1 OP_2 OP_3						,script      0 1 2 3 script_hex  00515253 stack       0x 1 2 3 stack_hex   010203 results     success
+test_OP_0 ADD,,OP_0 OP_0 OP_ADD						,script      0 0 OP_ADD script_hex  000093 stack       0 stack_hex   00 results     success
+test_WITHIN,,5 1 9 OP_WITHIN						,script      5 1 9 OP_WITHIN script_hex  555159a5 stack       1 stack_hex   01 results     success
+test_not_WITHIN,,1 5 9 OP_WITHIN					,script      1 5 9 OP_WITHIN script_hex  515559a5 stack       0 stack_hex   00 results     success
+test_WITHIN_LARGE,,0 -2147483647 2147483647 OP_WITHIN		,script      0 -2147483647 2147483647 OP_WITHIN script_hex  0004ffffffff04ffffff7fa5 stack       1 stack_hex   01 results     success

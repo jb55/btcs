@@ -34,19 +34,14 @@ sn_from_int(s64 n, struct num *sn) {
 void sn_serialize(struct num *sn, u8 *buf, int bufsize, u16 *len) {
   u8 *p = buf;
 
-  if(sn->val == 0) {
-    *len = 0;
-    return;
-  }
-
   const int neg = sn->val < 0;
   u64 absvalue = neg ? -(sn->val) : sn->val;
 
-  while(absvalue) {
+  do {
     *(p++) = absvalue & 0xff;
     assert((p - buf) <= bufsize);
     absvalue >>= 8;
-  }
+  } while(absvalue);
 
   //    - If the most significant byte is >= 0x80 and the value is positive, push a
   //    new zero-byte to make the significant byte < 0x80 again.
