@@ -1,6 +1,7 @@
 { nixpkgs ? import <nixpkgs> {}
 , stdenv ? nixpkgs.stdenv
 , bison ? nixpkgs.bison
+, lib ? nixpkgs.lib
 , flex ? nixpkgs.flex
 , python3 ? nixpkgs.python3
 }:
@@ -19,7 +20,7 @@ stdenv.mkDerivation rec {
     patchShebangs mph-opcodes
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Bitcoin script evaluator";
     homepage = "https://github.com/jb55/btcs";
     maintainers = with maintainers; [ jb55 ];
