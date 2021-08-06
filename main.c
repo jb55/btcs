@@ -16,7 +16,7 @@ char * g_reader_buf;
 char * g_reader_buf_top;
 struct stack g_reader_stack;
 u32 g_reader_buf_cap;
-void yy_scan_string(const char *);
+int yy_scan_string(const char *);
 
 
 void yyerror(const char* s);
@@ -48,7 +48,7 @@ static int compile(int compile_options, int argc, const char *argv[])
   int compiled_len;
   u8 *buf = (u8*)malloc(bufsize);
   struct stack tmp_stack;
-  alloc_arenas(0, MAX_STACK_SIZE, MAX_STACK_SIZE * MAX_STACK_SIZE);
+  alloc_arenas();
   stack_init(&tmp_stack);
   stack_init(&g_reader_stack);
 
