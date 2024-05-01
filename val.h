@@ -6,12 +6,12 @@
 #include "stack.h"
 
 enum valtype {
-  VT_SCRIPTNUM=0,
-  VT_SMALLINT,
-  VT_OP,
-  VT_RAW,
-  VT_DATA,
-  VT_N
+	VT_SCRIPTNUM=0,
+	VT_SMALLINT,
+	VT_OP,
+	VT_RAW,
+	VT_DATA,
+	VT_N
 };
 // UPDATE VAL_TYPE_BITS if you need more valtypes
 
@@ -21,8 +21,8 @@ enum valtype {
 #define VAL_COMPACT_BITS 29
 
 struct val {
-  u8 type : VAL_TYPE_BITS;
-  int ind : VAL_COMPACT_BITS;
+	u8 type : VAL_TYPE_BITS;
+	int ind : VAL_COMPACT_BITS;
 };
 
 #define smallintval(n) ((struct val){ .type = VT_SMALLINT, .ind = n })

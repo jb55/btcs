@@ -49,20 +49,19 @@ num_pool_new(u16 *ind) {
   return p;
 }
 
-u8 *
-byte_pool_new(u32 len, u16 *ind) {
-  assert((g_arenas.bytes_top - g_arenas.bytes + len) <= g_arenas.nbytes);
-  u8 *start = g_arenas.bytes_top;
-  u32 *c = (u32*)g_arenas.bytes_top;
-  *c++ = len;
-  u8 *p = (u8*)c;
-  p += len;
-  *ind = stack_size(&g_arenas.bytes_map);
-  stack_push(&g_arenas.bytes_map, (void*)start);
-  g_arenas.bytes_top = p;
-  assert(*p == 0);
-  assert(((g_arenas.bytes_top - g_arenas.bytes) + len) <= g_arenas.nbytes);
-  return p - len;
+unsigned char *byte_pool_new(u32 len, u16 *ind) {
+	assert((g_arenas.bytes_top - g_arenas.bytes + len) <= g_arenas.nbytes);
+	u8 *start = g_arenas.bytes_top;
+	u32 *c = (u32*)g_arenas.bytes_top;
+	*c++ = len;
+	u8 *p = (u8*)c;
+	p += len;
+	*ind = stack_size(&g_arenas.bytes_map);
+	stack_push(&g_arenas.bytes_map, (void*)start);
+	g_arenas.bytes_top = p;
+	assert(*p == 0);
+	assert(((g_arenas.bytes_top - g_arenas.bytes) + len) <= g_arenas.nbytes);
+	return p - len;
 }
 
 
