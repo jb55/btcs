@@ -72,5 +72,7 @@ clean: fake
 TAGS: fake
 	etags -o - *.c > $@
 
+tags: fake
+	ctags *.c
 
 .PHONY: fake
