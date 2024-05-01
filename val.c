@@ -102,6 +102,21 @@ int val_eq(struct val a, struct val b) {
 	return eq;
 }
 
+struct val val_cat(struct val a, struct val b)
+{
+	struct val c = { .type = VT_RAW };
+	unsigned char *dst, *a_src, *b_src;
+	u16 ind;
+	u32 a_len, b_len;
+	a_src = byte_pool_get(a.ind, &a_len);
+	b_src = byte_pool_get(b.ind, &b_len);
+	dst = byte_pool_new(a_len + b_len, &ind);
+	memcpy(dst, a_src, a_len);
+	memcpy(dst + a_len, b_src, b_len);
+	c.ind = ind;
+	return c;
+}
+
 struct val
 val_copy(struct val a) {
 	u32 len;

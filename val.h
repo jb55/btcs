@@ -40,6 +40,7 @@ val_eq(struct val a, struct val b);
 
 void val_serialize(struct val val, u32 *len, u8 *buf, int bufsize);
 void val_bytes(struct val val, u32 *len, u8 *buf, int bufsize);
+struct val val_cat(struct val a, struct val b);
 
 struct val val_from_int(s64);
 

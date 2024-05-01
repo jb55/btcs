@@ -151,8 +151,7 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
 		if (opcode > OP_16 && ++op_count > MAX_OPS_PER_SCRIPT)
 			SCRIPTERR("MAX_OPS_PER_SCRIPT");
 
-		if (opcode == OP_CAT ||
-				opcode == OP_SUBSTR ||
+		if ( opcode == OP_SUBSTR ||
 				opcode == OP_LEFT ||
 				opcode == OP_RIGHT ||
 				opcode == OP_INVERT ||
@@ -203,6 +202,17 @@ script_eval(const u8 *script, size_t script_size, struct stack *stack,
 		break;
 
 		case OP_NOP: break;
+
+		case OP_CAT: {
+			if (stack_size(stack) < 2)
+				SCRIPTERR("INVALID_STACK_OPERATION");
+			struct val a = stack_pop_val(stack);
+			struct val b = stack_pop_val(stack);
+			struct val c = val_cat(a, b);
+			stack_push_val(stack, c);
+
+			break;
+		}
 
 		case OP_NOP1: case OP_NOP4: case OP_NOP5:
 		case OP_NOP6: case OP_NOP7: case OP_NOP8: case OP_NOP9: case OP_NOP10:
